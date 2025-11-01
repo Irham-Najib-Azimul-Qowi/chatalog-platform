@@ -1,60 +1,65 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth'; // Kita akan pakai ini
 
-// 1. Impor semua halaman yang baru saja kita buat file-nya
-import HomePageChatalog from './pages/HomePageChatalog';
-import LoginPage from './pages/LoginPage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import SimulatorPage from './pages/SimulatorPage';
+// Komponen Global
+import AdminBar from './components/admin/AdminBar';
+
+// === Halaman Web Utama "Chatalog" ===
+import HomePageChatalog from './pages/chatalog/HomePageChatalog';
+import AboutPage from './pages/chatalog/AboutPage';
+import ContactPage from './pages/chatalog/ContactPage';
+import SimulatorPage from './pages/chatalog/SimulatorPage';
+import LoginPage from './pages/chatalog/LoginPage';
+import RegisterPage from './pages/chatalog/RegisterPage';
+
+// === Halaman Template "Toko Klien" ===
+import TokoRenderer from './pages/toko/TokoRenderer';
+
+// === Halaman Lain ===
 import NotFoundPage from './pages/NotFoundPage';
-import TokoRenderer from './pages/TokoRenderer';
 
-// 2. Buat "placeholder" (dummy component) untuk file yang belum kita isi
-//    agar aplikasi tidak error saat dijalankan
-const Placeholder = ({ pageName }) => (
-  <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-    <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>{pageName}</h1>
-    <p>Halaman ini sedang dalam pengembangan.</p>
-  </div>
-);
-
-// 3. Isi komponen halaman kita dengan placeholder
-//    (Kita akan ganti ini nanti)
-HomePageChatalog.defaultProps = { children: <Placeholder pageName="Homepage Chatalog (Publik)" /> };
-LoginPage.defaultProps = { children: <Placeholder pageName="Halaman Login Utama" /> };
-AboutPage.defaultProps = { children: <Placeholder pageName="Halaman Tentang Kami" /> };
-ContactPage.defaultProps = { children: <Placeholder pageName="Halaman Kontak" /> };
-SimulatorPage.defaultProps = { children: <Placeholder pageName="Halaman Simulator Fitur" /> };
-NotFoundPage.defaultProps = { children: <Placeholder pageName="404 - Halaman Tidak Ditemukan" /> };
-TokoRenderer.defaultProps = { children: <Placeholder pageName="Ini adalah Halaman Toko Klien" /> };
-
-// 4. Buat wrapper untuk komponen halaman agar placeholder-nya berfungsi
-const PageWrapper = ({ component: Component, pageName }) => {
-  return <Component><Placeholder pageName={pageName} /></Component>;
-};
-
-// 5. Definisikan Router Utama
 function App() {
+  const { loading } = useAuth(); // Ambil status loading dari AuthContext
+
+  // Tampilkan loading spinner jika Firebase sedang cek status login
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <h1>Loading...</h1>
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter>
-      {/* Di sinilah kita akan meletakkan komponen "Admin Bar" nanti.
-        Admin Bar akan tampil di SEMUA halaman jika kita login.
-      */}
+      {/* Admin Bar akan otomatis tampil di semua halaman jika kita login */}
+      <AdminBar /> 
       
       <Routes>
         {/* === Rute untuk Web Utama "Chatalog" === */}
-        <Route path="/" element={<PageWrapper component={HomePageChatalog} pageName="Homepage Chatalog (Publik)" />} />
-        <Route path="/login" element={<PageWrapper component={LoginPage} pageName="Halaman Login Utama" />} />
-        <Route path="/tentang" element={<PageWrapper component={AboutPage} pageName="Halaman Tentang Kami" />} />
-        <Route path="/kontak" element={<PageWrapper component={ContactPage} pageName="Halaman Kontak" />} />
-        <Route path="/simulator" element={<PageWrapper component={SimulatorPage} pageName="Halaman Simulator Fitur" />} />
+        <Route path="/" element={<HomePageChatalog />} />
+        <Route path="/tentang" element={<AboutPage />} />
+        <Route path="/kontak" element={<ContactPage />} />
+        <Route path="/simulator" element={<SimulatorPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        {/* Halaman Onboarding */}
+        <Route path="/register" element={<RegisterPage />} />
+
         
-        {/* === Rute untuk Toko Klien === */}
-        <Route path="/toko/:slug" element={<PageWrapper component={TokoRenderer} pageName="Halaman Toko Klien" />} />
+        {/* === Rute untuk Toko Klien === 
+          Ini adalah rute "ajaib" kita.
+          TokoRenderer akan menangani domain kustom atau slug /toko/:slug
+        */}
+        <Route path="/toko/:slug" element={<TokoRenderer />} />
+
+        {/* TODO: Kita perlu menambahkan logika di Vercel & App.jsx
+          untuk menangani Custom Domain (misal: toko-kripik.com),
+          yang juga akan me-render <TokoRenderer />
+        */}
         
         {/* Halaman 404 */}
-        <Route path="*" element={<PageWrapper component={NotFoundPage} pageName="404 - Halaman Tidak Ditemukan" />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
