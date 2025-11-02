@@ -1,19 +1,18 @@
 import { useState } from 'react';
 
 /**
- * PromoModal Component
- * Modal untuk mengelola promo dan diskon
+ * TestimoniModal Component
+ * Modal untuk mengelola testimoni pelanggan
  */
-const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
+const TestimoniModal = ({ isOpen, onClose, onSave, data = null }) => {
   const [formData, setFormData] = useState({
     nama: data?.nama || '',
-    kode: data?.kode || '',
-    jenis: data?.jenis || 'persen', // persen atau nominal
-    nilai: data?.nilai || '',
-    minPembelian: data?.minPembelian || '',
-    maxDiskon: data?.maxDiskon || '',
-    tanggalMulai: data?.tanggalMulai || '',
-    tanggalSelesai: data?.tanggalSelesai || '',
+    email: data?.email || '',
+    pesan: data?.pesan || '',
+    rating: data?.rating || 5,
+    foto: data?.foto || '',
+    produkId: data?.produkId || '',
+    tanggal: data?.tanggal || new Date().toISOString().split('T')[0],
     aktif: data?.aktif ?? true,
   });
 
@@ -41,7 +40,7 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">
-            {data ? 'Edit Promo' : 'Tambah Promo'}
+            {data ? 'Edit Testimoni' : 'Tambah Testimoni'}
           </h2>
           <button
             onClick={onClose}
@@ -53,123 +52,112 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nama Promo
-              </label>
-              <input
-                type="text"
-                name="nama"
-                value={formData.nama}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Contoh: Diskon Lebaran 50%"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kode Promo
-              </label>
-              <input
-                type="text"
-                name="kode"
-                value={formData.kode}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                placeholder="LEBARAN50"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Jenis Diskon
-              </label>
-              <select
-                name="jenis"
-                value={formData.jenis}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="persen">Persentase (%)</option>
-                <option value="nominal">Nominal (Rp)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nilai Diskon
-              </label>
-              <input
-                type="number"
-                name="nilai"
-                value={formData.nilai}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={formData.jenis === 'persen' ? '50' : '10000'}
-                min="0"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Minimum Pembelian
-              </label>
-              <input
-                type="number"
-                name="minPembelian"
-                value={formData.minPembelian}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0"
-                min="0"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Maksimum Diskon (opsional)
-              </label>
-              <input
-                type="number"
-                name="maxDiskon"
-                value={formData.maxDiskon}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0"
-                min="0"
-              />
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tanggal Mulai
+                  Nama Pelanggan
                 </label>
                 <input
-                  type="date"
-                  name="tanggalMulai"
-                  value={formData.tanggalMulai}
+                  type="text"
+                  name="nama"
+                  value={formData.nama}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Nama lengkap"
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tanggal Selesai
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="email@example.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Rating
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  name="rating"
+                  min="1"
+                  max="5"
+                  value={formData.rating}
+                  onChange={handleChange}
+                  className="flex-1"
+                />
+                <span className="text-2xl font-bold text-yellow-500">
+                  {'★'.repeat(formData.rating)}{'☆'.repeat(5 - formData.rating)}
+                </span>
+                <span className="text-lg font-semibold">({formData.rating}/5)</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Pesan Testimoni
+              </label>
+              <textarea
+                name="pesan"
+                value={formData.pesan}
+                onChange={handleChange}
+                rows="5"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Tulis testimoni pelanggan"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                URL Foto Pelanggan (opsional)
+              </label>
+              <input
+                type="url"
+                name="foto"
+                value={formData.foto}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Produk ID (opsional)
+                </label>
+                <input
+                  type="text"
+                  name="produkId"
+                  value={formData.produkId}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="ID produk terkait"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tanggal
                 </label>
                 <input
                   type="date"
-                  name="tanggalSelesai"
-                  value={formData.tanggalSelesai}
+                  name="tanggal"
+                  value={formData.tanggal}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
                 />
               </div>
             </div>
@@ -184,7 +172,7 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label htmlFor="aktif" className="ml-2 text-sm text-gray-700">
-                Aktif
+                Tampilkan di Website
               </label>
             </div>
           </div>
@@ -210,4 +198,5 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
   );
 };
 
-export default PromoModal;
+export default TestimoniModal;
+

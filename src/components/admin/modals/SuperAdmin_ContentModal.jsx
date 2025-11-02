@@ -1,19 +1,20 @@
 import { useState } from 'react';
 
 /**
- * PromoModal Component
- * Modal untuk mengelola promo dan diskon
+ * SuperAdmin_ContentModal Component
+ * Modal untuk mengelola konten sistem (Super Admin)
  */
-const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
+const SuperAdmin_ContentModal = ({ isOpen, onClose, onSave, data = null }) => {
   const [formData, setFormData] = useState({
-    nama: data?.nama || '',
-    kode: data?.kode || '',
-    jenis: data?.jenis || 'persen', // persen atau nominal
-    nilai: data?.nilai || '',
-    minPembelian: data?.minPembelian || '',
-    maxDiskon: data?.maxDiskon || '',
+    tipe: data?.tipe || 'page', // page, banner, announcement, dll
+    judul: data?.judul || '',
+    konten: data?.konten || '',
+    gambar: data?.gambar || '',
+    lokasi: data?.lokasi || 'homepage', // dimana konten akan ditampilkan
+    urutan: data?.urutan || '',
     tanggalMulai: data?.tanggalMulai || '',
     tanggalSelesai: data?.tanggalSelesai || '',
+    targetAudience: data?.targetAudience || 'all', // all, superadmin, toko_admin
     aktif: data?.aktif ?? true,
   });
 
@@ -38,10 +39,10 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">
-            {data ? 'Edit Promo' : 'Tambah Promo'}
+            {data ? 'Edit Konten' : 'Tambah Konten'}
           </h2>
           <button
             onClick={onClose}
@@ -53,95 +54,116 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipe Konten
+                </label>
+                <select
+                  name="tipe"
+                  value={formData.tipe}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="page">Halaman</option>
+                  <option value="banner">Banner</option>
+                  <option value="announcement">Pengumuman</option>
+                  <option value="popup">Popup</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Lokasi Tampil
+                </label>
+                <select
+                  name="lokasi"
+                  value={formData.lokasi}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="homepage">Homepage</option>
+                  <option value="dashboard">Dashboard</option>
+                  <option value="all">Semua Halaman</option>
+                </select>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nama Promo
+                Judul
               </label>
               <input
                 type="text"
-                name="nama"
-                value={formData.nama}
+                name="judul"
+                value={formData.judul}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Contoh: Diskon Lebaran 50%"
+                placeholder="Judul konten"
                 required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kode Promo
+                URL Gambar (opsional)
               </label>
               <input
-                type="text"
-                name="kode"
-                value={formData.kode}
+                type="url"
+                name="gambar"
+                value={formData.gambar}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                placeholder="LEBARAN50"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Konten
+              </label>
+              <textarea
+                name="konten"
+                value={formData.konten}
+                onChange={handleChange}
+                rows="8"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Isi konten (support HTML)"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Jenis Diskon
-              </label>
-              <select
-                name="jenis"
-                value={formData.jenis}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="persen">Persentase (%)</option>
-                <option value="nominal">Nominal (Rp)</option>
-              </select>
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Target Audience
+                </label>
+                <select
+                  name="targetAudience"
+                  value={formData.targetAudience}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">Semua User</option>
+                  <option value="superadmin">Super Admin</option>
+                  <option value="toko_admin">Owner Toko</option>
+                </select>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nilai Diskon
-              </label>
-              <input
-                type="number"
-                name="nilai"
-                value={formData.nilai}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={formData.jenis === 'persen' ? '50' : '10000'}
-                min="0"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Minimum Pembelian
-              </label>
-              <input
-                type="number"
-                name="minPembelian"
-                value={formData.minPembelian}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0"
-                min="0"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Maksimum Diskon (opsional)
-              </label>
-              <input
-                type="number"
-                name="maxDiskon"
-                value={formData.maxDiskon}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0"
-                min="0"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Urutan Tampil
+                </label>
+                <input
+                  type="number"
+                  name="urutan"
+                  value={formData.urutan}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="0"
+                  min="0"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -155,7 +177,6 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
                   value={formData.tanggalMulai}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
                 />
               </div>
 
@@ -169,7 +190,6 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
                   value={formData.tanggalSelesai}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
                 />
               </div>
             </div>
@@ -210,4 +230,5 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
   );
 };
 
-export default PromoModal;
+export default SuperAdmin_ContentModal;
+

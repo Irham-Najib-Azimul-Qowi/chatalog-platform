@@ -1,19 +1,16 @@
 import { useState } from 'react';
 
 /**
- * PromoModal Component
- * Modal untuk mengelola promo dan diskon
+ * UpsellModal Component
+ * Modal untuk mengelola upsell produk
  */
-const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
+const UpsellModal = ({ isOpen, onClose, onSave, data = null }) => {
   const [formData, setFormData] = useState({
     nama: data?.nama || '',
-    kode: data?.kode || '',
-    jenis: data?.jenis || 'persen', // persen atau nominal
-    nilai: data?.nilai || '',
-    minPembelian: data?.minPembelian || '',
-    maxDiskon: data?.maxDiskon || '',
-    tanggalMulai: data?.tanggalMulai || '',
-    tanggalSelesai: data?.tanggalSelesai || '',
+    produkId: data?.produkId || '',
+    deskripsi: data?.deskripsi || '',
+    harga: data?.harga || '',
+    gambar: data?.gambar || '',
     aktif: data?.aktif ?? true,
   });
 
@@ -41,7 +38,7 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">
-            {data ? 'Edit Promo' : 'Tambah Promo'}
+            {data ? 'Edit Upsell' : 'Tambah Upsell'}
           </h2>
           <button
             onClick={onClose}
@@ -55,7 +52,7 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nama Promo
+                Nama Upsell
               </label>
               <input
                 type="text"
@@ -63,52 +60,51 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
                 value={formData.nama}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Contoh: Diskon Lebaran 50%"
+                placeholder="Masukkan nama upsell"
                 required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kode Promo
+                Produk ID
               </label>
               <input
                 type="text"
-                name="kode"
-                value={formData.kode}
+                name="produkId"
+                value={formData.produkId}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                placeholder="LEBARAN50"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="ID produk terkait"
                 required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Jenis Diskon
+                Deskripsi
               </label>
-              <select
-                name="jenis"
-                value={formData.jenis}
+              <textarea
+                name="deskripsi"
+                value={formData.deskripsi}
                 onChange={handleChange}
+                rows="4"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="persen">Persentase (%)</option>
-                <option value="nominal">Nominal (Rp)</option>
-              </select>
+                placeholder="Deskripsi upsell produk"
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nilai Diskon
+                Harga
               </label>
               <input
                 type="number"
-                name="nilai"
-                value={formData.nilai}
+                name="harga"
+                value={formData.harga}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={formData.jenis === 'persen' ? '50' : '10000'}
+                placeholder="0"
                 min="0"
                 required
               />
@@ -116,62 +112,16 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Minimum Pembelian
+                URL Gambar
               </label>
               <input
-                type="number"
-                name="minPembelian"
-                value={formData.minPembelian}
+                type="url"
+                name="gambar"
+                value={formData.gambar}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0"
-                min="0"
+                placeholder="https://..."
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Maksimum Diskon (opsional)
-              </label>
-              <input
-                type="number"
-                name="maxDiskon"
-                value={formData.maxDiskon}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0"
-                min="0"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tanggal Mulai
-                </label>
-                <input
-                  type="date"
-                  name="tanggalMulai"
-                  value={formData.tanggalMulai}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tanggal Selesai
-                </label>
-                <input
-                  type="date"
-                  name="tanggalSelesai"
-                  value={formData.tanggalSelesai}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
             </div>
 
             <div className="flex items-center">
@@ -210,4 +160,5 @@ const PromoModal = ({ isOpen, onClose, onSave, data = null }) => {
   );
 };
 
-export default PromoModal;
+export default UpsellModal;
+
