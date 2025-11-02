@@ -21,14 +21,18 @@ chatalog-platform/
 │   │   │   ├── AdminBarToko.jsx         # Admin bar untuk owner toko
 │   │   │   │
 │   │   │   └── 📁 modals/               # Modal components untuk admin
+│   │   │       ├── BlogModal.jsx        # Modal kelola artikel blog
+│   │   │       ├── GaleriModal.jsx      # Modal kelola galeri foto
 │   │   │       ├── LokasiModal.jsx      # Modal kelola lokasi toko
 │   │   │       ├── MitraModal.jsx       # Modal kelola mitra/partner
 │   │   │       ├── ProdukModal.jsx      # Modal kelola produk
 │   │   │       ├── ProfilModal.jsx      # Modal edit profil toko
 │   │   │       ├── PromoModal.jsx       # Modal kelola promo/diskon
+│   │   │       ├── SuperAdmin_ContentModal.jsx  # Modal kelola konten sistem (Super Admin)
 │   │   │       ├── SuperAdmin_OrderModal.jsx    # Modal detail order (Super Admin)
 │   │   │       ├── SuperAdmin_TokoModal.jsx      # Modal kelola toko (Super Admin)
 │   │   │       ├── TampilanModal.jsx     # Modal pengaturan tampilan
+│   │   │       ├── TestimoniModal.jsx    # Modal kelola testimoni pelanggan
 │   │   │       └── UpsellModal.jsx      # Modal kelola upsell produk
 │   │   │
 │   │   ├── 📁 common/                    # Komponen umum yang reusable
@@ -50,7 +54,8 @@ chatalog-platform/
 │   │       ├── LokasiSection.jsx         # Section lokasi toko
 │   │       ├── MitraSection.jsx         # Section mitra/partner
 │   │       ├── ProductCard.jsx          # Card komponen produk
-│   │       └── PromoBanner.jsx          # Banner promo
+│   │       ├── PromoBanner.jsx          # Banner promo
+│   │       └── TestimoniSection.jsx     # Section testimoni pelanggan
 │   │
 │   ├── 📁 contexts/                      # React Context untuk state management
 │   │   ├── AuthContext.jsx              # Context untuk autentikasi
@@ -71,6 +76,10 @@ chatalog-platform/
 │   │   │   └── SimulatorPage.jsx        # Halaman Simulator
 │   │   │
 │   │   ├── 📁 toko/                      # Halaman template untuk toko klien
+│   │   │   ├── TokoAboutPage.jsx        # Halaman tentang toko
+│   │   │   ├── TokoBlogPage.jsx         # Halaman blog toko
+│   │   │   ├── TokoContactPage.jsx       # Halaman kontak toko
+│   │   │   ├── TokoGaleriPage.jsx       # Halaman galeri foto toko
 │   │   │   ├── TokoHomepage.jsx         # Halaman beranda toko
 │   │   │   ├── TokoLokasiPage.jsx       # Halaman lokasi toko
 │   │   │   ├── TokoProdukPage.jsx       # Halaman produk toko
@@ -99,7 +108,7 @@ chatalog-platform/
 │   ├── vite.config.js                   # Vite build configuration
 │   └── README.md                        # Dokumentasi proyek
 │
-└── project_structure.txt                # File struktur (dihasilkan)
+└── PROJECT_STRUCTURE.md                 # Dokumentasi struktur proyek
 ```
 
 ## Keterangan Struktur
@@ -120,15 +129,23 @@ chatalog-platform/
 ### 📁 components/
 - **admin/**: Komponen khusus untuk admin panel
   - Admin bar untuk berbagai role (admin, super admin, toko owner)
-  - Modal-modal untuk CRUD operations
+  - Modal-modal untuk CRUD operations:
+    - Blog, Galeri, Lokasi, Mitra, Produk, Profil, Promo
+    - Testimoni, Upsell
+    - Super Admin: Content, Order, Toko
 - **common/**: Komponen umum yang bisa digunakan di mana saja
 - **layout/**: Komponen layout (navbar, footer) untuk berbagai halaman
 - **toko_template/**: Komponen khusus untuk template halaman toko klien
+  - Section components: Hero, Lokasi, Mitra, Promo, Testimoni
+  - Modal components: Cart, Checkout
+  - Card component: ProductCard
 
 ### 📁 pages/
 - **chatalog/**: Halaman untuk web utama/platform
+  - HomePage, AboutPage, ContactPage, LoginPage, RegisterPage, SimulatorPage
 - **toko/**: Halaman template yang di-render untuk toko klien
   - `TokoRenderer.jsx` menangani routing berdasarkan slug toko
+  - Halaman: Homepage, About, Blog, Contact, Galeri, Lokasi, Produk
 
 ### 📁 services/
 - Integrasi dengan Firebase (Auth, Firestore, Functions)
