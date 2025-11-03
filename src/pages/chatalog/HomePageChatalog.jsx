@@ -1,108 +1,82 @@
-import { Link } from 'react-router-dom';
+import React from 'react';
 import NavbarChatalog from '../../components/layout/NavbarChatalog';
 import FooterChatalog from '../../components/layout/FooterChatalog';
+import { Link } from 'react-router-dom';
 
-/**
- * HomePageChatalog Component
- * Halaman beranda utama untuk platform Chatalog
- */
-const HomePageChatalog = () => {
+// Homepage Web Utama Chatalog
+function HomePageChatalog() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col min-h-screen">
+      {/* 1. Pasang Navbar Chatalog */}
       <NavbarChatalog />
-      
+
+      {/* Konten Halaman */}
       <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-5xl font-bold mb-6">
-                Platform Toko Online untuk Bisnis Anda
-              </h1>
-              <p className="text-xl mb-8 opacity-90">
-                Buat toko online profesional dalam hitungan menit. 
-                Kelola produk, order, dan pelanggan dengan mudah.
-              </p>
-              <div className="flex gap-4 justify-center">
-                <Link
-                  to="/register"
-                  className="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition"
-                >
-                  Daftar Sekarang
-                </Link>
-                <Link
-                  to="/simulator"
-                  className="px-6 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition"
-                >
-                  Coba Simulator
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="py-20 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">
-              Fitur Unggulan
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">🛍️</span>
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Kelola Produk Mudah</h3>
-                <p className="text-gray-600">
-                  Tambah, edit, dan kelola produk dengan interface yang intuitif
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">📱</span>
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Mobile Friendly</h3>
-                <p className="text-gray-600">
-                  Toko Anda otomatis responsive dan siap untuk semua perangkat
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">🎨</span>
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Template Menarik</h3>
-                <p className="text-gray-600">
-                  Pilih dari berbagai template yang profesional dan modern
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">
-              Siap Memulai Toko Online Anda?
-            </h2>
-            <p className="text-gray-600 mb-8">
-              Bergabunglah dengan ratusan bisnis yang sudah mempercayai Chatalog
+        
+        {/* Bagian 1: Hero Section */}
+        <section className="bg-white text-center py-20 md:py-32">
+          <div className="container mx-auto px-6">
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
+              Website UMKM Canggih, <br /> Semudah Mengedit Canva
+            </h1>
+            <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Buat toko online profesional Anda sendiri dengan "Live Editor" dan asisten AI. Tidak perlu coding.
             </p>
-            <Link
-              to="/register"
-              className="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+            <Link 
+              to="/register" 
+              // Menggunakan warna Secondary Chatalog
+              className="bg-[#FFAB40] text-black font-bold py-3 px-8 rounded-md text-lg hover:bg-orange-400 transition-colors"
             >
-              Daftar Gratis Sekarang
+              Coba Sekarang (Gratis)
             </Link>
           </div>
         </section>
+
+        {/* Bagian 2: Showcase / Portofolio Klien */}
+        <section className="bg-gray-50 py-20">
+          <div className="container mx-auto px-6 text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Dipercaya oleh Ratusan UMKM
+            </h2>
+            <p className="text-gray-600 mb-12">
+              (Placeholder: Nanti di sini kita tampilkan statistik dan logo-logo klien)
+            </p>
+            <div className="flex flex-wrap justify-center items-center gap-8">
+              {/* Ini adalah placeholder logo klien */}
+              <span className="text-gray-500 font-semibold">Logo Klien 1</span>
+              <span className="text-gray-500 font-semibold">Logo Klien 2</span>
+              <span className="text-gray-500 font-semibold">Logo Klien 3</span>
+              <span className="text-gray-500 font-semibold">Logo Klien 4</span>
+              <span className="text-gray-500 font-semibold">Logo Klien 5</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Bagian 3: Kisah Chatalog */}
+        <section className="bg-white py-20">
+          <div className="container mx-auto px-6 max-w-4xl">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Kisah Kami</h2>
+              <p className="text-gray-600 mb-8">
+                (Placeholder: Teks "Kisah Chatalog" atau "Tentang Tim" akan kita isi di sini. 
+                Data ini akan diambil dari Firestore dan bisa diedit oleh Super Admin)
+              </p>
+              <Link 
+                to="/tentang" 
+                className="text-[#006064] hover:underline font-semibold"
+              >
+                Baca lebih lanjut
+              </Link>
+            </div>
+          </div>
+        </section>
+
       </main>
 
+      {/* 2. Pasang Footer Chatalog */}
       <FooterChatalog />
     </div>
   );
-};
+}
 
 export default HomePageChatalog;
