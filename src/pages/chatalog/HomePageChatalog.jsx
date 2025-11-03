@@ -18,6 +18,7 @@ function HomePageChatalog() {
           </p>
           <Link 
             to="/register" 
+            // Menggunakan warna Secondary Chatalog
             className="bg-[#FFAB40] text-black font-bold py-3 px-8 rounded-md text-lg hover:bg-orange-400 transition-colors"
           >
             Coba Sekarang (Gratis)
@@ -32,10 +33,9 @@ function HomePageChatalog() {
             Dipercaya oleh Ratusan UMKM
           </h2>
           <p className="text-gray-600 mb-12">
-            (Placeholder: Nanti di sini kita tampilkan statistik dan logo-logo klien)
+            (Nanti di sini kita tampilkan statistik dan logo-logo klien)
           </p>
           <div className="flex flex-wrap justify-center items-center gap-8">
-            {/* Ini adalah placeholder logo klien */}
             <span className="text-gray-500 font-semibold">Logo Klien 1</span>
             <span className="text-gray-500 font-semibold">Logo Klien 2</span>
             <span className="text-gray-500 font-semibold">Logo Klien 3</span>
@@ -51,7 +51,7 @@ function HomePageChatalog() {
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Kisah Kami</h2>
             <p className="text-gray-600 mb-8">
-              (Placeholder: Teks "Kisah Chatalog" atau "Tentang Tim" akan kita isi di sini. 
+              (Teks "Kisah Chatalog" atau "Tentang Tim" akan kita isi di sini. 
               Data ini akan diambil dari Firestore dan bisa diedit oleh Super Admin)
             </p>
             <Link 

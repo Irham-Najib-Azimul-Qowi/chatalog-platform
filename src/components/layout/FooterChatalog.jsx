@@ -6,7 +6,7 @@ function FooterChatalog() {
     // Menggunakan warna Primer Chatalog
     <footer className="bg-[#006064] text-gray-300 py-12">
       <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-
+        
         {/* Kolom 1: Tentang Chatalog */}
         <div>
           <h3 className="text-2xl font-bold text-white mb-4">Chatalog</h3>
@@ -14,7 +14,7 @@ function FooterChatalog() {
             Platform "pabrik website" untuk UMKM go digital dengan mudah, cepat, dan terintegrasi AI.
           </p>
         </div>
-
+        
         {/* Kolom 2: Link Cepat */}
         <div>
           <h4 className="text-lg font-semibold text-white mb-4">Navigasi</h4>
@@ -25,7 +25,7 @@ function FooterChatalog() {
             <li><Link to="/register" className="hover:text-white">Daftar Sekarang</Link></li>
           </ul>
         </div>
-
+        
         {/* Kolom 3: Kontak */}
         <div>
           <h4 className="text-lg font-semibold text-white mb-4">Hubungi Kami</h4>
@@ -39,7 +39,7 @@ function FooterChatalog() {
       </div>
       <div className="container mx-auto px-6 text-center mt-8 border-t border-gray-700 pt-6">
         <p className="text-sm">
-          &copy; {new Date().getFullYear()} Chatalog. Dibuat oleh [Nama Anda & Teman Anda].
+          &copy; {new Date().getFullYear()} Chatalog.
         </p>
       </div>
     </footer>
