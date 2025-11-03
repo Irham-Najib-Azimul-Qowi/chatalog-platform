@@ -31,6 +31,8 @@ import TokoGaleriPage from './pages/toko/TokoGaleriPage';
 // === Halaman Lain ===
 import NotFoundPage from './pages/NotFoundPage';
 
+import ProtectedRoute from './components/common/ProtectedRoute'; // <-- 1. IMPOR
+
 // Komponen 'Loading'
 function AppLoading() {
   const { loading } = useAuth(); 
@@ -61,9 +63,30 @@ function AppLoading() {
 
         {/* === Rute dari 'fitur-onboarding-flow' === */}
         <Route path="/register" element={<RegisterPage />} /> 
-        <Route path="/register/tutorial" element={<OnboardingTutorial />} />
-        <Route path="/register/info" element={<OnboardingInfo />} />
-        <Route path="/editor" element={<EditorPage />} /> 
+        <Route 
+          path="/register/tutorial" 
+          element={
+            <ProtectedRoute allowedRoles={['toko_admin']}>
+              <OnboardingTutorial />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/register/info" 
+          element={
+            <ProtectedRoute allowedRoles={['toko_admin']}>
+              <OnboardingInfo />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/editor" 
+          element={
+            <ProtectedRoute allowedRoles={['toko_admin']}>
+              <EditorPage />
+            </ProtectedRoute>
+          } 
+        /> 
 
         {/* === Rute Toko Klien & 404 === */}
         <Route path="/toko/:slug" element={<TokoRenderer />} />
@@ -77,7 +100,6 @@ function AppLoading() {
     </>
   );
 }
-
 // Fungsi App utama
 function App() {
   return (

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, addDoc, collection } from "firebase/firestore"; 
 import { auth, db } from '../../services/firebase';
+import { useAuth } from '../../hooks/useAuth'; // <-- 1. IMPOR useAuth
 
 // Step 1: Halaman Pendaftaran Akun
 function RegisterPage() {
@@ -11,6 +12,7 @@ function RegisterPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { refreshUserData } = useAuth(); // <-- 2. AMBIL FUNGSI REFRESH
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,7 +58,12 @@ function RegisterPage() {
         themeName: 'Kombinasi 1', // Default tema
       });
 
-      // 5. Arahkan ke langkah selanjutnya: Tutorial
+      // --- 5. PERBAIKAN BUG: "Bangunkan" AuthContext ---
+      // Panggil refreshUserData SETELAH data Firestore ditulis
+      await refreshUserData(user.uid);
+      // --- AKHIR PERBAIKAN ---
+
+      // 6. Arahkan ke langkah selanjutnya: Tutorial
       navigate('/register/tutorial');
 
     } catch (err) {
