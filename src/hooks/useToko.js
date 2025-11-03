@@ -2,16 +2,11 @@ import { useContext } from 'react';
 import TokoContext from '../contexts/TokoContext';
 
 /**
- * Custom hook untuk mengakses data toko dari TokoContext.
- * * Data yang dikembalikan: 
+ * Custom hook untuk mengakses data toko dan fungsi admin dari TokoContext.
+ * * * Data yang dikembalikan meliputi: 
  * { 
- * loading: boolean, 
- * error: string | null, 
- * info: object, 
- * settings: object, 
- * features: object, 
- * produk: array,
- * testimoni: array
+ * info, settings, features, produk, testimoni, ui, 
+ * openAdminModal, closeAdminModal 
  * }
  */
 export const useToko = () => {
@@ -21,5 +16,14 @@ export const useToko = () => {
     throw new Error('useToko harus digunakan di dalam TokoProvider');
   }
 
-  return context;
+  // Destrukturisasi dan return semua nilai, termasuk fungsi admin
+  const { 
+    loading, error, info, settings, features, produk, testimoni, ui,
+    openAdminModal, closeAdminModal
+  } = context;
+
+  return { 
+    loading, error, info, settings, features, produk, testimoni, ui,
+    openAdminModal, closeAdminModal
+  };
 };

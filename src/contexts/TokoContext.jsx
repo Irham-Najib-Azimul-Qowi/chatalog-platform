@@ -12,58 +12,82 @@ const TokoContext = createContext();
 const initialTokoData = {
   loading: true,
   error: null,
-  // Struktur data Toko Klien dari Firestore
   info: {}, 
   settings: {
-    warna_primer: '#000000', // Warna default
+    warna_primer: '#4f46e5', // Warna default ungu-600
     logo_url: '',
+    hero_image_url: 'https://via.placeholder.com/1200x600?text=Hero+Image+Default',
+    // ... setting tampilan lainnya
   },
   features: {
     show_blog: false,
     show_galeri: false,
     show_lokasi_page: false,
     show_mitra_section: false,
-    custom_color_enabled: false,
+    custom_color_enabled: false, // Penting untuk fitur berbayar
   },
-  produk: [], // Array produk
-  testimoni: [], // Array testimoni
+  produk: [], 
+  testimoni: [], 
+  // Tambahkan state untuk mengelola UI di dalam editor (misal: modal admin mana yang terbuka)
+  ui: {
+      isModalOpen: false,
+      activeModal: null, // Contoh: 'Produk', 'Tampilan', 'Upsell'
+      upsellFeatureName: null, // Nama fitur yang terkunci
+  }
 };
 
 // 2. Buat Provider
 export const TokoProvider = ({ children, storeSlug }) => {
   const [tokoData, setTokoData] = useState(initialTokoData);
 
+  // Fungsi-fungsi untuk mengelola UI (akan digunakan oleh AdminBarToko)
+  const openAdminModal = (modalName, upsellFeature = null) => {
+    setTokoData(prev => ({
+        ...prev,
+        ui: {
+            isModalOpen: true,
+            activeModal: modalName,
+            upsellFeatureName: upsellFeature,
+        }
+    }));
+  };
+
+  const closeAdminModal = () => {
+    setTokoData(prev => ({
+        ...prev,
+        ui: initialTokoData.ui, // Reset UI state
+    }));
+  };
+
+  // --- Real-Time Data Fetching dari Firestore ---
   useEffect(() => {
     if (!storeSlug) {
       setTokoData(prev => ({ ...prev, loading: false, error: 'Slug Toko tidak ditemukan.' }));
       return;
     }
 
-    // Path ke dokumen Toko di Firestore
     const tokoRef = doc(db, 'toko_klien', storeSlug);
 
-    // Langganan Real-Time dengan onSnapshot
     const unsubscribe = onSnapshot(tokoRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         
-        // Memastikan struktur data tetap konsisten (merapikan atau mengisi default jika ada field hilang)
         const updatedData = {
           info: data.info || initialTokoData.info,
-          settings: data.settings || initialTokoData.settings,
+          settings: { ...initialTokoData.settings, ...(data.settings || {}) },
           features: { ...initialTokoData.features, ...(data.features || {}) },
           produk: data.produk || initialTokoData.produk,
           testimoni: data.testimoni || initialTokoData.testimoni,
         };
 
-        setTokoData({
+        setTokoData(prev => ({
+          ...prev, // Pertahankan state UI sebelumnya
           ...updatedData,
           loading: false,
           error: null,
-        });
+        }));
 
       } else {
-        // Dokumen Toko tidak ditemukan
         setTokoData(prev => ({
           ...initialTokoData,
           loading: false,
@@ -79,32 +103,33 @@ export const TokoProvider = ({ children, storeSlug }) => {
       }));
     });
 
-    // Clean-up function untuk menghentikan langganan saat komponen unmount
     return () => unsubscribe();
-  }, [storeSlug]); // Jalankan ulang jika storeSlug berubah
+  }, [storeSlug]); 
 
-  // Memoize value untuk mencegah re-render yang tidak perlu pada consumers
-  const contextValue = useMemo(() => tokoData, [tokoData]);
+  // Memoize value, termasuk fungsi-fungsi admin
+  const contextValue = useMemo(() => ({
+      ...tokoData,
+      openAdminModal,
+      closeAdminModal,
+  }), [tokoData]);
 
+  // Handle Loading dan Error di sini (Untuk tampilan publik atau editor)
   if (tokoData.loading) {
-      // Tampilan loader minimalis (menggunakan Tailwind)
       return (
           <div className="flex h-screen items-center justify-center bg-gray-50">
               <div className="text-xl font-semibold text-indigo-600">
-                  Memuat Toko...
+                  Memuat Toko Chatalog...
               </div>
           </div>
       );
   }
 
-  // Error case: Toko tidak ditemukan
   if (tokoData.error) {
     return (
         <div className="flex h-screen items-center justify-center bg-red-50">
-            <div className="p-4 rounded-lg bg-white shadow-lg">
-                <p className="text-xl font-bold text-red-600 mb-2">Error 404 - Toko Tidak Ditemukan</p>
+            <div className="p-6 rounded-lg bg-white shadow-xl text-center">
+                <p className="text-2xl font-bold text-red-600 mb-2">Error 404 - Toko Tidak Ditemukan</p>
                 <p className="text-gray-700">{tokoData.error}</p>
-                <p className="text-sm mt-3 text-gray-500">Pastikan URL slug toko sudah benar.</p>
             </div>
         </div>
     );
