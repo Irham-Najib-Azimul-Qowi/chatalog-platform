@@ -1,118 +1,108 @@
 import React, { useMemo } from 'react';
-import { useParams, useLocation, Outlet } from 'react-router-dom';
+import { useParams, Outlet } from 'react-router-dom';
 
-// Komponen Layout (Tugas Anda)
+// Layout & Context
+import { TokoProvider } from '../../contexts/TokoContext';
+import { useToko } from '../../hooks/useToko'; 
 import NavbarToko from '../../components/layout/NavbarToko';
 import FooterToko from '../../components/layout/FooterToko';
 
-// Context dan Hooks (Tugas Anda)
-import { TokoProvider } from '../../contexts/TokoContext';
-import { useToko } from '../../hooks/useToko'; 
+// Modals (Dari Step 4)
+import ProdukModal from '../../components/admin/modals/ProdukModal';
+import TampilanModal from '../../components/admin/modals/TampilanModal';
+import UpsellModal from '../../components/admin/modals/UpsellModal';
+// Import Modal lain yang sudah Anda buat
+import ProfilModal from '../../components/admin/modals/ProfilModal';
+import PromoModal from '../../components/admin/modals/PromoModal';
+// ... dll
 
-// Admin Bar (Tugas Anda - Akan diisi di Step 4)
-import AdminBarToko from '../../components/admin/AdminBarToko'; 
-
-// Hooks Partner Anda (HANYA PAKAI)
-// eslint-disable-next-line import/no-unresolved
-import { useAuth } from '../../hooks/useAuth'; 
 
 /**
- * TokoLayout: Komponen yang menggunakan data TokoContext 
- * dan menyediakan struktur layout (Navbar, Footer, AdminBar).
+ * TokoLayout: Komponen yang menggunakan data TokoContext dan menyediakan layout
+ * (Navbar, Footer, Pages, dan Modal Admin).
+ * Komponen ini TIDAK mengurus loading atau error, karena itu ditangani di TokoProvider.
  */
 const TokoLayout = () => {
-    // 1. Ambil data Toko (sudah dimuat oleh TokoProvider)
-    const { info, settings } = useToko();
+    // 1. Ambil Data Toko (sudah dimuat oleh TokoProvider)
+    const { settings, ui } = useToko();
 
-    // 2. Ambil status Auth (dari partner)
-    const { isAuthenticated, user, loading: authLoading } = useAuth();
+    // 2. Tentukan Warna Primer Dinamis
+    const primaryColor = settings?.warna_primer || '#4f46e5'; 
 
-    // 3. Tentukan apakah pengguna adalah Admin Toko
-    // Anggap objek user memiliki property 'isStoreAdmin' atau kita cocokkan UID/email.
-    // Untuk simulasi, kita cek apakah user adalah pemilik toko ini (info.adminUID)
-    const isAdmin = useMemo(() => {
-        if (!isAuthenticated || authLoading || !user || !info.adminUID) {
-            return false;
-        }
-        // Logika: User yang login (user.uid) harus sesuai dengan Admin Toko (info.adminUID)
-        return user.uid === info.adminUID;
-    }, [isAuthenticated, authLoading, user, info.adminUID]);
-
-
-    // Styling dinamis (Warna Kustom dari Settings)
-    // Gunakan warna primer di sini atau lewati ke Navbar/Footer
-    const primaryColor = settings?.warna_primer || '#4f46e5'; // Default ungu-600 Tailwind
-
-    // Style yang akan diaplikasikan ke elemen root
-    const rootStyle = {
+    // Style yang akan diaplikasikan ke elemen root, menggunakan CSS Variable
+    const rootStyle = useMemo(() => ({
         '--color-primary': primaryColor,
+    }), [primaryColor]);
+
+
+    // 3. Logika Pemilihan Modal Aktif
+    const renderActiveModal = () => {
+        // ui.isModalOpen dan ui.activeModal dikelola oleh openAdminModal/closeAdminModal di TokoContext
+        if (!ui.isModalOpen) return null;
+
+        switch (ui.activeModal) {
+            case 'Produk':
+                return <ProdukModal />; // Modal yang menerima closeAdminModal via useToko()
+            case 'Tampilan':
+                return <TampilanModal />;
+            case 'Profil':
+                return <ProfilModal />;
+            case 'Promo':
+                return <PromoModal />;
+            case 'Upsell':
+                return <UpsellModal />; // Menggunakan ui.upsellFeatureName secara internal
+            // Tambahkan case untuk semua modal lainnya di sini
+            default:
+                return null;
+        }
     };
 
-
     return (
-        <div className="min-h-screen flex flex-col" style={rootStyle}>
-            {/* Admin Bar (Hanya Muncul Jika Admin Login) */}
-            {isAdmin && (
-                // AdminBarToko akan menggunakan data TokoContext dan AuthContext
-                // dan akan mengapung di atas semua konten
-                <AdminBarToko /> 
-            )}
+        // Terapkan CSS Variable ke elemen tertinggi.
+        <div className="min-h-screen flex flex-col antialiased" style={rootStyle}>
+            
+            {/* 1. Navbar Toko */}
+            <NavbarToko />
 
-            {/* Navbar Toko */}
-            <header className={`${isAdmin ? 'mt-12' : ''}`}> 
-                {/* Tambahkan margin-top jika AdminBar muncul agar tidak tertutup */}
-                <NavbarToko />
-            </header>
-
-            {/* Konten Halaman Toko (TokoHomepage, TokoProdukPage, dll) */}
+            {/* 2. Konten Halaman Toko (TokoHomepage, TokoProdukPage, dll) */}
+            {/* Outlet merender komponen anak yang sesuai dengan rute di App.jsx */}
             <main className="flex-grow">
                 <Outlet /> 
             </main>
 
-            {/* Footer Toko */}
+            {/* 3. Footer Toko */}
             <FooterToko />
+
+            {/* 4. Modal Admin (Hanya muncul jika dipicu) */}
+            {renderActiveModal()}
         </div>
     );
 };
 
 /**
- * TokoRenderer: Komponen pintar yang menangani routing dan pembungkus context.
+ * TokoRenderer: Pintu gerbang yang menangani pengambilan slug dan pembungkus context.
+ * Ini adalah komponen yang diimpor di App.jsx untuk rute publik /toko/:slug
+ * dan diimpor oleh Editor Shell partner Anda untuk mode preview.
  */
 const TokoRenderer = () => {
     // Ambil slug dari URL (misalnya dari /toko/nama-toko-saya)
     const { slug } = useParams();
-    const location = useLocation();
-
-    // Opsional: Validasi slug (misalnya, harus string dan bukan "chatalog")
 
     if (!slug) {
-        // Ini seharusnya ditangani oleh konfigurasi router, tapi kita beri fallback 404
+        // Fallback jika routing tidak lengkap
         return (
             <div className="p-10 text-center text-red-600">
-                Error: URL Toko tidak lengkap.
+                Error: URL Toko tidak lengkap. (Handler 404/NotFoundPage akan lebih baik di App.jsx)
             </div>
         );
     }
     
-    // Key component di sini adalah TokoProvider
     return (
+        // TokoProvider akan menangani loading, error, dan data fetching.
         <TokoProvider storeSlug={slug}>
-            {/* TokoLayout akan mendapatkan data Toko setelah dimuat oleh Provider */}
             <TokoLayout />
         </TokoProvider>
     );
 };
 
 export default TokoRenderer;
-
-/*
-Catatan Konfigurasi Router (HANYA INFO, ini bagian dari Partner A/App.jsx):
--------------------------------------------------------------------------
-<Routes>
-    <Route path="/toko/:slug" element={<TokoRenderer />}>
-        <Route index element={<TokoHomepage />} /> 
-        <Route path="produk" element={<TokoProdukPage />} /> 
-        // ... rute toko lainnya
-    </Route>
-</Routes>
-*/
