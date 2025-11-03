@@ -9,11 +9,10 @@ export const AuthContext = createContext(null);
 // 2. Buat "Provider" (Penyedia) Konteks
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [userRole, setUserRole] = useState(null); // 'superadmin' atau 'toko_admin'
+  const [userData, setUserData] = useState(null); // Menyimpan data user (role, tokoId)
   const [loading, setLoading] = useState(true); // Status loading untuk cek auth
 
   // 3. Listener (Pendengar) Otomatis dari Firebase
-  // Ini akan otomatis berjalan saat aplikasi dimuat & saat ada login/logout
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -23,31 +22,27 @@ export const AuthProvider = ({ children }) => {
         const userDocSnap = await getDoc(userDocRef);
 
         if (userDocSnap.exists()) {
-          const userData = userDocSnap.data();
+          const dbUserData = userDocSnap.data();
           setCurrentUser(user);
-          setUserRole(userData.role); // Simpan peran (role)
+          setUserData(dbUserData); // Simpan semua data (role, name, tokoId)
         } else {
-          // Kasus aneh: user ada di Auth tapi tidak ada di database
           console.error("User tidak ditemukan di Firestore!");
           setCurrentUser(null);
-          setUserRole(null);
+          setUserData(null);
         }
       } else {
         // Pengguna baru saja logout
         setCurrentUser(null);
-        setUserRole(null);
+        setUserData(null);
       }
       setLoading(false); // Selesai loading
     });
 
-    // Cleanup listener saat komponen dibongkar
+    // Cleanup listener
     return () => unsubscribe();
   }, []);
 
   // 4. Fungsi Login (Kita pakai Email/Password untuk No. Telp)
-  // Firebase Auth menggunakan "email" sebagai ID unik, tapi kita bisa
-  // "menipunya" dengan memasukkan nomor telepon sebagai email.
-  // Format: 123456789@chatalog.com (Kita akan tambahkan @chatalog.com otomatis)
   const login = (phone, password) => {
     // Ubah nomor telepon menjadi format email
     const email = `${phone}@chatalog.com`; // Trik agar bisa pakai No. Telp
@@ -62,7 +57,7 @@ export const AuthProvider = ({ children }) => {
   // 6. Nilai yang akan dibagikan ke seluruh aplikasi
   const value = {
     currentUser,
-    userRole,
+    userData, // Kirim role, tokoId, dll.
     loading,
     login,
     logout
@@ -71,7 +66,7 @@ export const AuthProvider = ({ children }) => {
   // 7. Render children (aplikasi kita)
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children} {/* Tampilkan aplikasi HANYA jika loading auth selesai */}
+      {children} {/* Jangan blok render, biarkan AppLoading yg urus */}
     </AuthContext.Provider>
   );
 };

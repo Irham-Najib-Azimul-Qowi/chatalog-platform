@@ -1,114 +1,150 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import NavbarChatalog from '../../components/layout/NavbarChatalog';
-import FooterChatalog from '../../components/layout/FooterChatalog';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { doc, getDoc } from "firebase/firestore"; // Impor getDoc
+import { db } from '../../services/firebase'; // Impor db
 
-/**
- * LoginPage Component
- * Halaman login untuk admin dan owner toko
- */
-const LoginPage = () => {
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    phone: '',
-    password: '',
-  });
+// Komponen Halaman Login Utama
+function LoginPage() {
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { login, currentUser, userData, loading } = useAuth(); // Ambil dari hook
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setIsSubmitting(true);
+
+    if (!phone || !password) {
+      setError('Nomor Telepon dan Password wajib diisi.');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      await login(formData.phone, formData.password);
-      navigate('/'); // Redirect ke home setelah login
-    } catch (err) {
-      setError('Nomor telepon atau password salah');
-      console.error('Login error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <NavbarChatalog />
+      // Panggil fungsi login dari AuthContext
+      const userCredential = await login(phone, password);
       
-      <main className="flex-grow flex items-center justify-center py-12">
-        <div className="w-full max-w-md px-4">
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h1 className="text-3xl font-bold mb-6 text-center">Login</h1>
-            
-            {error && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                {error}
-              </div>
-            )}
+      // Ambil role DAN slug secara manual di sini untuk redirect
+      const userDocRef = doc(db, "users", userCredential.user.uid);
+      const userDocSnap = await getDoc(userDocRef);
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nomor Telepon
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="081234567890"
-                  required
-                />
-              </div>
+      if (userDocSnap.exists()) {
+        const dbUserData = userDocSnap.data();
+        
+        // --- Logika Pengalihan (Redirect) ---
+        if (dbUserData.role === 'superadmin') {
+          navigate("/", { replace: true }); // Super Admin ke Homepage Chatalog
+        } else if (dbUserData.role === 'toko_admin') {
+          
+          // Ambil slug toko dari dokumen TOKO, bukan user
+          // Kita butuh dokumen 'tokos' dulu
+          // Untuk sekarang, kita arahkan ke halaman editor
+          navigate("/editor", { replace: true }); // Admin Toko ke halaman editor
+          
+        }
+      } else {
+        setError('Data user tidak ditemukan di database.');
+      }
+      
+    } catch (err) {
+      if (err.code === 'auth/invalid-credential') {
+        setError('Nomor Telepon atau Password salah.');
+      } else {
+        setError('Terjadi kesalahan. Coba lagi nanti.');
+      }
+      console.error("Login Error:", err);
+    }
+    setIsSubmitting(false);
+  };
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Masukkan password"
-                  required
-                />
-              </div>
+  // --- Redirect jika sudah login ---
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <h1>Memeriksa status login...</h1>
+      </div>
+    ); 
+  }
+  
+  if (currentUser && userData) {
+    if (userData.role === 'superadmin') {
+      return <Navigate to="/" replace />; // Super Admin ke Homepage Chatalog
+    } else if (userData.role === 'toko_admin') {
+      return <Navigate to="/editor" replace />; // Admin Toko ke halaman editor
+    }
+  }
+  // --- Akhir Redirect ---
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Memproses...' : 'Login'}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Belum punya akun?{' '}
-                <Link to="/register" className="text-blue-600 hover:underline">
-                  Daftar di sini
-                </Link>
-              </p>
-            </div>
+  // Jika belum login, tampilkan form
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold text-center text-gray-900">
+          Login ke Chatalog
+        </h2>
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div>
+            <label 
+              htmlFor="phone" 
+              className="block text-sm font-medium text-gray-700"
+            >
+              Nomor Telepon
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              autoComplete="tel"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Contoh: 08123456789"
+            />
           </div>
-        </div>
-      </main>
 
-      <FooterChatalog />
+          <div>
+            <label 
+              htmlFor="password" 
+              className="block text-sm font-medium text-gray-700"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="••••••••"
+            />
+          </div>
+
+          {error && (
+            <p className="text-sm text-red-600 text-center">{error}</p>
+          )}
+
+          <div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
+            >
+              {isSubmitting ? 'Memproses...' : 'Login'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
-};
+}
 
 export default LoginPage;
