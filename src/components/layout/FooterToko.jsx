@@ -1,85 +1,45 @@
-/**
- * FooterToko Component
- * Footer untuk halaman toko klien
- */
-const FooterToko = ({ tokoData = null }) => {
-  const namaToko = tokoData?.namaToko || 'Toko';
-  const mediaSocial = tokoData?.mediaSocial || {};
+import React from 'react';
+import { useToko } from '../../hooks/useToko';
 
-  return (
-    <footer className="bg-gray-800 text-white py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* About Toko */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">{namaToko}</h3>
-            {tokoData?.deskripsi && (
-              <p className="text-gray-400 text-sm">
-                {tokoData.deskripsi}
-              </p>
-            )}
-          </div>
+const FooterToko = () => {
+    const { info, settings } = useToko();
+    
+    const namaToko = info?.nama_toko || 'Chatalog Store';
+    const tahun = new Date().getFullYear();
 
-          {/* Contact */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Kontak</h3>
-            <ul className="space-y-2 text-sm text-gray-400">
-              {tokoData?.email && <li>Email: {tokoData.email}</li>}
-              {tokoData?.telepon && <li>Telepon: {tokoData.telepon}</li>}
-              {tokoData?.alamat && <li>Alamat: {tokoData.alamat}</li>}
-            </ul>
-          </div>
+    return (
+        <footer className="bg-gray-100 border-t border-gray-200 mt-auto">
+            <div className="container mx-auto px-4 py-8">
+                <div className="flex flex-wrap justify-between items-center">
+                    
+                    {/* Info Toko */}
+                    <div className="w-full md:w-1/3 mb-6 md:mb-0">
+                        <h3 className="text-xl font-bold text-[var(--color-primary)] mb-2">{namaToko}</h3>
+                        <p className="text-gray-600 text-sm">
+                            {info?.deskripsi_singkat || 'Toko online terbaik yang dibuat dengan Chatalog.'}
+                        </p>
+                    </div>
 
-          {/* Social Media */}
-          {(mediaSocial.instagram || mediaSocial.facebook || mediaSocial.twitter) && (
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Media Sosial</h3>
-              <div className="flex space-x-4">
-                {mediaSocial.instagram && (
-                  <a
-                    href={`https://instagram.com/${mediaSocial.instagram}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition"
-                    aria-label="Instagram"
-                  >
-                    Instagram
-                  </a>
-                )}
-                {mediaSocial.facebook && (
-                  <a
-                    href={mediaSocial.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition"
-                    aria-label="Facebook"
-                  >
-                    Facebook
-                  </a>
-                )}
-                {mediaSocial.twitter && (
-                  <a
-                    href={`https://twitter.com/${mediaSocial.twitter}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition"
-                    aria-label="Twitter"
-                  >
-                    Twitter
-                  </a>
-                )}
-              </div>
+                    {/* Navigasi Cepat (Sederhana) */}
+                    <div className="w-full md:w-1/3 mb-6 md:mb-0">
+                        <h4 className="font-semibold text-gray-700 mb-2">Tautan Cepat</h4>
+                        <ul className="space-y-1 text-sm">
+                            <li><a href="/" className="text-gray-600 hover:text-[var(--color-primary)]">Home</a></li>
+                            <li><a href="/produk" className="text-gray-600 hover:text-[var(--color-primary)]">Produk</a></li>
+                            <li><a href="/contact" className="text-gray-600 hover:text-[var(--color-primary)]">Kontak</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                {/* Copyright */}
+                <div className="text-center mt-8 pt-4 border-t border-gray-300">
+                    <p className="text-xs text-gray-500">
+                        &copy; {tahun} {namaToko}. Powered by Chatalog.
+                    </p>
+                </div>
             </div>
-          )}
-        </div>
-
-        <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; {new Date().getFullYear()} {namaToko}. All rights reserved.</p>
-          <p className="mt-2">Powered by Chatalog</p>
-        </div>
-      </div>
-    </footer>
-  );
+        </footer>
+    );
 };
 
 export default FooterToko;

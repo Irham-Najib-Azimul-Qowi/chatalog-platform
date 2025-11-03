@@ -1,79 +1,54 @@
-import { useState } from 'react';
+import React from 'react';
 
-/**
- * ProductCard Component
- * Card komponen untuk menampilkan produk
- */
-const ProductCard = ({ product, onAddToCart }) => {
-  const [imageError, setImageError] = useState(false);
+// Fungsi bantuan untuk format harga (anggap ada di utils/index.js)
+const formatRupiah = (number) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+    }).format(number);
+};
 
-  const handleAddToCart = () => {
-    if (onAddToCart) {
-      onAddToCart(product);
-    } else {
-      // TODO: Implement default add to cart logic
-      console.log('Add to cart:', product);
-    }
-  };
+const ProductCard = ({ produk }) => {
+    return (
+        <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+            
+            {/* Gambar Produk */}
+            <div className="h-48 overflow-hidden">
+                <img 
+                    src={produk.gambar_url || 'https://via.placeholder.com/400x300?text=Produk+Belum+Ada'} 
+                    alt={produk.nama} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                />
+            </div>
 
-  return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-      {/* Product Image */}
-      <div className="relative w-full h-48 bg-gray-200">
-        {product.gambar && !imageError ? (
-          <img
-            src={product.gambar}
-            alt={product.nama}
-            className="w-full h-full object-cover"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            <span className="text-4xl">🛍️</span>
-          </div>
-        )}
-      </div>
+            <div className="p-4">
+                {/* Nama Produk */}
+                <h3 className="text-lg font-semibold text-gray-800 truncate mb-1" title={produk.nama}>
+                    {produk.nama}
+                </h3>
+                
+                {/* Deskripsi Singkat */}
+                <p className="text-sm text-gray-500 h-10 overflow-hidden mb-3">
+                    {produk.deskripsi_singkat || 'Deskripsi singkat produk ini.'}
+                </p>
 
-      {/* Product Info */}
-      <div className="p-4">
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-          {product.nama || 'Produk'}
-        </h3>
-        
-        {product.deskripsi && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-            {product.deskripsi}
-          </p>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div>
-            {product.hargaDiskon ? (
-              <div>
-                <span className="text-red-600 font-bold text-lg">
-                  Rp {parseInt(product.hargaDiskon).toLocaleString('id-ID')}
-                </span>
-                <span className="text-gray-400 line-through text-sm ml-2">
-                  Rp {parseInt(product.harga).toLocaleString('id-ID')}
-                </span>
-              </div>
-            ) : (
-              <span className="text-gray-800 font-bold text-lg">
-                Rp {parseInt(product.harga || 0).toLocaleString('id-ID')}
-              </span>
-            )}
-          </div>
+                {/* Harga dan Tombol Beli */}
+                <div className="flex justify-between items-center mt-3">
+                    <span className="text-xl font-bold text-[var(--color-primary)]">
+                        {formatRupiah(produk.harga || 0)}
+                    </span>
+                    <button
+                        className="py-2 px-3 text-sm font-semibold rounded-lg text-white 
+                                   bg-[var(--color-primary)] hover:opacity-90 transition"
+                        onClick={() => console.log(`Tambah ${produk.nama} ke keranjang`)}
+                    >
+                        + Keranjang
+                    </button>
+                </div>
+            </div>
         </div>
-
-        <button
-          onClick={handleAddToCart}
-          className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-        >
-          Tambah ke Keranjang
-        </button>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default ProductCard;
