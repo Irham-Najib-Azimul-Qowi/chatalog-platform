@@ -5,7 +5,7 @@ import { useAuth } from './hooks/useAuth';
 
 // Komponen Global
 import AdminBar from './components/admin/AdminBar';
-import ChatalogLayout from './components/layout/ChatalogLayout'; // 1. Impor Layout Baru
+import ChatalogLayout from './components/layout/ChatalogLayout'; // Dari 'main'
 
 // === Halaman Web Utama "Chatalog" ===
 import HomePageChatalog from './pages/chatalog/HomePageChatalog';
@@ -13,7 +13,12 @@ import AboutPage from './pages/chatalog/AboutPage';
 import ContactPage from './pages/chatalog/ContactPage';
 import SimulatorPage from './pages/chatalog/SimulatorPage';
 import LoginPage from './pages/chatalog/LoginPage';
+// --- Dari 'fitur-onboarding-flow' ---
 import RegisterPage from './pages/chatalog/RegisterPage';
+import OnboardingTutorial from './pages/chatalog/OnboardingTutorial'; 
+import OnboardingInfo from './pages/chatalog/OnboardingInfo';     
+import EditorPage from './pages/chatalog/EditorPage';           
+// --- Akhir ---
 
 // === Halaman Template "Toko Klien" ===
 import TokoRenderer from './pages/toko/TokoRenderer';
@@ -23,13 +28,12 @@ import TokoContactPage from './pages/toko/TokoContactPage';
 import TokoBlogPage from './pages/toko/TokoBlogPage';
 import TokoGaleriPage from './pages/toko/TokoGaleriPage';
 
-
 // === Halaman Lain ===
 import NotFoundPage from './pages/NotFoundPage';
 
 // Komponen 'Loading'
 function AppLoading() {
-  const { loading } = useAuth(); // Ambil status loading dari AuthContext
+  const { loading } = useAuth(); 
 
   if (loading) {
     return (
@@ -39,54 +43,47 @@ function AppLoading() {
     );
   }
 
-  // Jika tidak loading, tampilkan rute aplikasi
   return (
     <>
-      {/* Admin Bar akan otomatis tampil di semua halaman jika kita login */}
       <AdminBar /> 
-      
+
       <Routes>
-        {/* === Rute untuk Web Utama "Chatalog" === */}
-        {/* 2. Bungkus semua halaman publik Chatalog dengan ChatalogLayout */}
+        {/* === Rute dari 'main' (ChatalogLayout) === */}
         <Route element={<ChatalogLayout />}>
           <Route path="/" element={<HomePageChatalog />} />
           <Route path="/tentang" element={<AboutPage />} />
           <Route path="/kontak" element={<ContactPage />} />
           <Route path="/simulator" element={<SimulatorPage />} />
         </Route>
-        
-        {/* Halaman yang TIDAK pakai layout (misal: Login, Register) */}
+
+        {/* Halaman non-layout */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        
-        {/* === Rute untuk Toko Klien === */}
+
+        {/* === Rute dari 'fitur-onboarding-flow' === */}
+        <Route path="/register" element={<RegisterPage />} /> 
+        <Route path="/register/tutorial" element={<OnboardingTutorial />} />
+        <Route path="/register/info" element={<OnboardingInfo />} />
+        <Route path="/editor" element={<EditorPage />} /> 
+
+        {/* === Rute Toko Klien & 404 === */}
         <Route path="/toko/:slug" element={<TokoRenderer />} />
-        
-        {/* Rute opsional untuk fitur halaman kustom */}
-        {/* CATATAN: Rute ini akan dirender DI DALAM TokoRenderer.
-          Kita perlu memodifikasi TokoRenderer (di tugas Teman Anda) 
-          untuk menangani rute-rute nested ini.
-          Untuk sekarang, ini adalah placeholder yang benar.
-        */}
         <Route path="/toko/:slug/lokasi" element={<TokoLokasiPage />} />
         <Route path="/toko/:slug/tentang" element={<TokoAboutPage />} />
         <Route path="/toko/:slug/kontak" element={<TokoContactPage />} />
         <Route path="/toko/:slug/blog" element={<TokoBlogPage />} />
         <Route path="/toko/:slug/galeri" element={<TokoGaleriPage />} />
-
-        {/* Halaman 404 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>
   );
 }
 
-// Fungsi App utama, sekarang hanya membungkus AuthProvider dan Router
+// Fungsi App utama
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <AppLoading /> {/* Pindahkan logic loading ke komponen terpisah */}
+        <AppLoading />
       </BrowserRouter>
     </AuthProvider>
   );
