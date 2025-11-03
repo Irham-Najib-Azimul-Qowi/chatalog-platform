@@ -1,14 +1,29 @@
 import { useContext } from 'react';
-import { TokoContext } from '../contexts/TokoContext';
+import TokoContext from '../contexts/TokoContext';
 
-const useToko = () => {
+/**
+ * Custom hook untuk mengakses data toko dan fungsi admin dari TokoContext.
+ * * * Data yang dikembalikan meliputi: 
+ * { 
+ * info, settings, features, produk, testimoni, ui, 
+ * openAdminModal, closeAdminModal 
+ * }
+ */
+export const useToko = () => {
   const context = useContext(TokoContext);
 
   if (context === undefined) {
-    throw new Error('useToko must be used within a TokoProvider');
+    throw new Error('useToko harus digunakan di dalam TokoProvider');
   }
 
-  return context;
-};
+  // Destrukturisasi dan return semua nilai, termasuk fungsi admin
+  const { 
+    loading, error, info, settings, features, produk, testimoni, ui,
+    openAdminModal, closeAdminModal
+  } = context;
 
-export default useToko;
+  return { 
+    loading, error, info, settings, features, produk, testimoni, ui,
+    openAdminModal, closeAdminModal
+  };
+};

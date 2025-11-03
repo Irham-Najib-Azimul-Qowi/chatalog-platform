@@ -1,42 +1,53 @@
+import React from 'react';
+import { useToko } from '../../hooks/useToko';
 import HeroSection from '../../components/toko_template/HeroSection';
-import PromoBanner from '../../components/toko_template/PromoBanner';
 import ProductCard from '../../components/toko_template/ProductCard';
+import TestimoniSection from '../../components/toko_template/TestimoniSection';
+import MitraSection from '../../components/toko_template/MitraSection';
 
-/**
- * TokoHomepage Component
- * Halaman beranda untuk toko klien
- */
 const TokoHomepage = () => {
-  // TODO: Fetch products and promo data from Firebase
-  const sampleProducts = [
-    // Placeholder data
-    { id: 1, nama: 'Produk 1', harga: 50000, gambar: '' },
-    { id: 2, nama: 'Produk 2', harga: 75000, gambar: '' },
-    { id: 3, nama: 'Produk 3', harga: 100000, gambar: '' },
-  ];
+    // Ambil data produk dan feature flags
+    const { produk, features } = useToko();
 
-  return (
-    <div>
-      <HeroSection />
-      
-      <PromoBanner />
+    // Tampilkan 8 produk pertama atau yang ditandai sebagai featured
+    const featuredProduk = produk.slice(0, 8); 
 
-      {/* Products Section */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold mb-8 text-center">Produk Kami</h2>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {sampleProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+    return (
+        <div className="TokoHomepage">
+            
+            {/* 1. Hero Section */}
+            <HeroSection />
+
+            {/* 2. Featured Product Section */}
+            <section className="py-16 bg-gray-50">
+                <div className="container mx-auto px-4">
+                    <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
+                        Produk Unggulan Kami
+                    </h2>
+                    
+                    {featuredProduk.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {featuredProduk.map((item) => (
+                                <ProductCard key={item.id} produk={item} />
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-center text-gray-500 p-8 border border-dashed border-gray-300 rounded-lg">
+                            Belum ada produk untuk ditampilkan. Silakan tambahkan produk melalui Admin Editor.
+                        </p>
+                    )}
+                </div>
+            </section>
+            
+            {/* 3. Testimoni Section (Hanya contoh) */}
+            <TestimoniSection /> 
+
+            {/* 4. Mitra Section (Feature Flagged) */}
+            {features.show_mitra_section && (
+                <MitraSection />
+            )}
         </div>
-      </section>
-
-      {/* TODO: Add more sections like testimonials, about, etc. */}
-    </div>
-  );
+    );
 };
 
 export default TokoHomepage;
