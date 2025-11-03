@@ -1,72 +1,77 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { auth, db } from '../services/firebase'; // Impor dari firebase.js
+import { auth, db } from '../services/firebase';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
-// 1. Buat Konteksnya
 export const AuthContext = createContext(null);
 
-// 2. Buat "Provider" (Penyedia) Konteks
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [userData, setUserData] = useState(null); // Menyimpan data user (role, tokoId)
-  const [loading, setLoading] = useState(true); // Status loading untuk cek auth
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // 3. Listener (Pendengar) Otomatis dari Firebase
   useEffect(() => {
+    // ... (Fungsi onAuthStateChanged Anda tetap sama persis) ...
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Pengguna baru saja login
-        // Ambil data peran (role) mereka dari Firestore
         const userDocRef = doc(db, "users", user.uid);
         const userDocSnap = await getDoc(userDocRef);
-
         if (userDocSnap.exists()) {
-          const dbUserData = userDocSnap.data();
           setCurrentUser(user);
-          setUserData(dbUserData); // Simpan semua data (role, name, tokoId)
+          setUserData(userDocSnap.data());
         } else {
-          console.error("User tidak ditemukan di Firestore!");
-          setCurrentUser(null);
+          console.warn("User ada di Auth tapi belum ada di Firestore (Mungkin sedang mendaftar?)");
+          setCurrentUser(user);
           setUserData(null);
         }
       } else {
-        // Pengguna baru saja logout
         setCurrentUser(null);
         setUserData(null);
       }
-      setLoading(false); // Selesai loading
+      setLoading(false);
     });
-
-    // Cleanup listener
     return () => unsubscribe();
   }, []);
 
-  // 4. Fungsi Login (Kita pakai Email/Password untuk No. Telp)
+  // --- 1. TAMBAHKAN FUNGSI BARU INI ---
+  // Fungsi ini akan dipanggil manual oleh RegisterPage
+  // setelah user document BERHASIL ditulis.
+  const refreshUserData = async (uid) => {
+    if (!uid) return;
+    
+    console.log("AuthContext: Merefresh data user secara manual...");
+    const userDocRef = doc(db, "users", uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+      setUserData(userDocSnap.data());
+    } else {
+      console.error("refreshUserData: Gagal menemukan dokumen user.");
+    }
+  };
+  // --- AKHIR FUNGSI BARU ---
+
+
   const login = (phone, password) => {
-    // Ubah nomor telepon menjadi format email
-    const email = `${phone}@chatalog.com`; // Trik agar bisa pakai No. Telp
-    return signInWithEmailAndPassword(auth, email, password);
+    // ... (fungsi login Anda) ...
   };
 
-  // 5. Fungsi Logout
   const logout = () => {
-    return signOut(auth);
+    // ... (fungsi logout Anda) ...
   };
 
-  // 6. Nilai yang akan dibagikan ke seluruh aplikasi
   const value = {
     currentUser,
-    userData, // Kirim role, tokoId, dll.
+    userData,
     loading,
     login,
-    logout
+    logout,
+    refreshUserData // <-- 2. EKSPOR FUNGSI BARU DI SINI
   };
 
-  // 7. Render children (aplikasi kita)
   return (
     <AuthContext.Provider value={value}>
-      {children} {/* Jangan blok render, biarkan AppLoading yg urus */}
+      {children}
     </AuthContext.Provider>
   );
 };
