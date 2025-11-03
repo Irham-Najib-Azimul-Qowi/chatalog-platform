@@ -1,82 +1,68 @@
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import Logo from '../common/Logo';
 
-/**
- * NavbarChatalog Component
- * Navbar untuk halaman-halaman Chatalog
- */
-const NavbarChatalog = () => {
-  const { currentUser } = useAuth();
+// Navbar untuk web utama Chatalog
+function NavbarChatalog() {
+  const { currentUser } = useAuth(); // Cek apakah ada yg login
+
+  const activeClass = "text-white font-bold";
+  const inactiveClass = "text-gray-300 hover:text-white";
 
   return (
-    <nav className="bg-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <Logo />
-            <span className="ml-2 text-xl font-bold text-blue-600">Chatalog</span>
-          </Link>
+    // Menggunakan warna Primer Chatalog
+    <header className="bg-[#006064] text-white shadow-md sticky top-0 z-40">
+      <nav className="container mx-auto flex justify-between items-center p-4 px-6">
+        {/* Kiri: Logo */}
+        <Link to="/" className="text-2xl font-bold">
+          Chatalog
+        </Link>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex space-x-8">
-            <Link
-              to="/"
-              className="text-gray-700 hover:text-blue-600 transition"
-            >
-              Beranda
-            </Link>
-            <Link
-              to="/tentang"
-              className="text-gray-700 hover:text-blue-600 transition"
-            >
-              Tentang
-            </Link>
-            <Link
-              to="/kontak"
-              className="text-gray-700 hover:text-blue-600 transition"
-            >
-              Kontak
-            </Link>
-            <Link
-              to="/simulator"
-              className="text-gray-700 hover:text-blue-600 transition"
-            >
-              Simulator
-            </Link>
-          </div>
-
-          {/* Auth Buttons */}
-          <div className="flex items-center space-x-4">
-            {currentUser ? (
-              <Link
-                to="/"
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="px-4 py-2 text-sm text-gray-700 hover:text-blue-600 transition"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  Daftar
-                </Link>
-              </>
-            )}
-          </div>
+        {/* Tengah: Menu Navigasi */}
+        <div className="hidden md:flex space-x-6">
+          <NavLink 
+            to="/" 
+            className={({ isActive }) => isActive ? activeClass : inactiveClass}
+          >
+            Home
+          </NavLink>
+          <NavLink 
+            to="/tentang" 
+            className={({ isActive }) => isActive ? activeClass : inactiveClass}
+          >
+            Tentang Kami
+          </NavLink>
+          <NavLink 
+            to="/simulator" 
+            className={({ isActive }) => isActive ? activeClass : inactiveClass}
+          >
+            Simulator
+          </NavLink>
+          <NavLink 
+            to="/kontak" 
+            className={({ isActive }) => isActive ? activeClass : inactiveClass}
+          >
+            Kontak
+          </NavLink>
         </div>
-      </div>
-    </nav>
+
+        {/* Kanan: Tombol Aksi */}
+        <div>
+          {!currentUser ? (
+            <Link 
+              to="/login" 
+              // Menggunakan warna Secondary Chatalog
+              className="bg-[#FFAB40] text-black font-bold py-2 px-4 rounded-md hover:bg-orange-400 transition-colors"
+            >
+              Login
+            </Link>
+          ) : (
+            <span className="text-sm">Selamat Datang!</span>
+          )}
+        </div>
+      </nav>
+    </header>
   );
-};
+}
 
 export default NavbarChatalog;

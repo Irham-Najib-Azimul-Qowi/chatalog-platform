@@ -1,30 +1,19 @@
 import React from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import AdminBarSuperAdmin from './AdminBarSuperAdmin';
-import AdminBarToko from './AdminBarToko';
+// Kita HAPUS impor AdminBarToko dari sini
 
-// Komponen ini bertindak sebagai "controller"
-// Ia memutuskan bar mana yang harus ditampilkan
+// Komponen ini SEKARANG HANYA UNTUK SUPER ADMIN
 function AdminBar() {
   const { currentUser, userData } = useAuth(); // Ambil status login & data user
 
-  if (!currentUser || !userData) {
-    // Jika tidak ada yang login, jangan tampilkan apa-apa
-    return null;
-  }
-
-  if (userData.role === 'superadmin') {
-    // Jika yang login Super Admin, tampilkan bar-nya
+  // Tampilkan bar HANYA jika yang login adalah Super Admin
+  if (currentUser && userData && userData.role === 'superadmin') {
     return <AdminBarSuperAdmin />;
   }
 
-  if (userData.role === 'toko_admin') {
-    // Jika yang login Admin Toko, tampilkan bar-nya
-    // (Ini adalah placeholder, teman Anda akan mengisinya nanti)
-    return <AdminBarToko />;
-  }
-
-  // Default, jangan tampilkan apa-apa jika role tidak dikenali
+  // Jika bukan Super Admin (atau tidak login), jangan tampilkan apa-apa.
+  // Admin Toko akan ditangani oleh halaman /editor.
   return null;
 }
 
