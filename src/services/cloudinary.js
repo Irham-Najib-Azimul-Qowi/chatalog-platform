@@ -1,50 +1,38 @@
-/**
- * Cloudinary Service
- * 
- * Placeholder functions for Cloudinary image upload and management
- */
+// Konfigurasi Cloudinary
+// Ganti dengan Cloud Name dan Upload Preset Anda yang sebenarnya
+const CLOUDINARY_CLOUD_NAME = 'your-cloudinary-cloud-name';
+const CLOUDINARY_UPLOAD_PRESET = 'chatalog_toko_preset'; // Harus Unsigned
 
 /**
- * Upload image to Cloudinary
- * @param {File|Blob} file - Image file to upload
- * @param {Object} options - Upload options (folder, transformation, etc.)
- * @returns {Promise<Object>} Upload response with URL and public_id
+ * Fungsi untuk mengupload file gambar ke Cloudinary.
+ * @param {File} file - Objek file (dari input type="file")
+ * @returns {Promise<string>} URL gambar yang diupload
  */
-export const uploadToCloudinary = async (file, options = {}) => {
-  // TODO: Implement Cloudinary upload logic
-  // Example structure:
-  // const formData = new FormData();
-  // formData.append('file', file);
-  // formData.append('upload_preset', 'your_upload_preset');
-  // 
-  // const response = await fetch('https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload', {
-  //   method: 'POST',
-  //   body: formData,
-  // });
-  // 
-  // return await response.json();
-  
-  throw new Error('uploadToCloudinary is not implemented yet.');
-};
+export const uploadImageToCloudinary = async (file) => {
+    if (!file) return null;
 
-/**
- * Delete image from Cloudinary
- * @param {string} publicId - Public ID of the image to delete
- * @returns {Promise<Object>} Delete response
- */
-export const deleteFromCloudinary = async (publicId) => {
-  // TODO: Implement Cloudinary delete logic
-  throw new Error('deleteFromCloudinary is not implemented yet.');
-};
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-/**
- * Get optimized image URL from Cloudinary
- * @param {string} publicId - Public ID of the image
- * @param {Object} transformations - Image transformations (width, height, crop, etc.)
- * @returns {string} Optimized image URL
- */
-export const getCloudinaryUrl = (publicId, transformations = {}) => {
-  // TODO: Implement Cloudinary URL generation logic
-  // Example: return `https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/${transformations}/${publicId}`;
-  throw new Error('getCloudinaryUrl is not implemented yet.');
+    try {
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+            {
+                method: 'POST',
+                body: formData,
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Cloudinary upload failed: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data.secure_url; // Mengembalikan URL gambar yang sudah diupload
+
+    } catch (error) {
+        console.error("Error uploading image to Cloudinary:", error);
+        throw new Error("Gagal mengupload gambar.");
+    }
 };

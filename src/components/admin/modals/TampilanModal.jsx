@@ -1,238 +1,118 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { useToko } from '../../../hooks/useToko';
+import { updateStoreSettings } from '../../../services/firebaseFunctions';
 
-/**
- * TampilanModal Component
- * Modal untuk mengelola tampilan dan pengaturan template toko
- */
-const TampilanModal = ({ isOpen, onClose, onSave, data = null }) => {
-  const [formData, setFormData] = useState({
-    tema: data?.tema || 'default',
-    warnaPrimer: data?.warnaPrimer || '#3B82F6',
-    warnaSekunder: data?.warnaSekunder || '#1E40AF',
-    logo: data?.logo || '',
-    favicon: data?.favicon || '',
-    fontFamily: data?.fontFamily || 'inter',
-    layout: data?.layout || 'standard',
-    tampilkanKategori: data?.tampilkanKategori ?? true,
-    tampilkanTestimoni: data?.tampilkanTestimoni ?? true,
-    tampilkanChat: data?.tampilkanChat ?? true,
-  });
+const PaletWarna = [
+    { name: 'Ungu (Default)', hex: '#4f46e5' },
+    { name: 'Merah', hex: '#ef4444' },
+    { name: 'Kuning', hex: '#f59e0b' },
+    { name: 'Hijau', hex: '#10b981' },
+    { name: 'Cyan', hex: '#06b6d4' },
+    { name: 'Biru', hex: '#3b82f6' },
+];
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: Implement save logic
-    if (onSave) {
-      onSave(formData);
-    }
-    onClose();
-  };
+const TampilanModal = () => {
+    const { settings, info, openAdminModal, closeAdminModal } = useToko();
+    
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
+    
+    // State lokal untuk form
+    const [warnaPrimer, setWarnaPrimer] = useState(settings?.warna_primer || PaletWarna[0].hex);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
+    // Dapatkan slug toko dari info (diasumsikan ada di info)
+    const storeSlug = info?.slug; 
 
-  if (!isOpen) return null;
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (loading || !storeSlug) return;
+        
+        setLoading(true);
+        setMessage('');
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Pengaturan Tampilan</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
-          >
-            ×
-          </button>
+        try {
+            // Update hanya field 'warna_primer' di object 'settings'
+            const update = { warna_primer: warnaPrimer };
+            await updateStoreSettings(storeSlug, update); 
+            
+            setMessage('Warna berhasil diperbarui! Perubahan sudah terlihat.');
+            
+            // Tunggu sebentar lalu tutup modal
+            setTimeout(() => {
+                closeAdminModal();
+            }, 1000);
+
+        } catch (error) {
+            setMessage(`Gagal menyimpan: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
+                <div className="p-6 border-b flex justify-between items-center">
+                    <h2 className="text-2xl font-bold text-[var(--color-primary)]">Atur Tampilan Toko</h2>
+                    <button onClick={closeAdminModal} className="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    {/* Pemilihan Palet Warna */}
+                    <div>
+                        <label className="block text-lg font-semibold mb-3">Pilih Warna Primer (Aksen)</label>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                            {PaletWarna.map((warna) => (
+                                <button
+                                    key={warna.hex}
+                                    type="button"
+                                    className={`h-16 rounded-lg shadow-md border-4 ${
+                                        warnaPrimer === warna.hex ? 'border-gray-500 ring-2 ring-offset-2 ring-gray-400' : 'border-transparent'
+                                    } transition-all duration-150`}
+                                    style={{ backgroundColor: warna.hex }}
+                                    onClick={() => setWarnaPrimer(warna.hex)}
+                                    title={warna.name}
+                                >
+                                    <span className="sr-only">{warna.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    {/* Color Picker Kustom (Hanya muncul jika fitur diaktifkan) */}
+                    {settings.features?.custom_color_enabled && (
+                        <div>
+                            <label htmlFor="custom_color" className="block text-lg font-semibold mb-2">Warna Kustom Pilihan</label>
+                            <input 
+                                id="custom_color" 
+                                type="color" 
+                                value={warnaPrimer} 
+                                onChange={(e) => setWarnaPrimer(e.target.value)}
+                                className="w-full h-10 cursor-pointer p-0 border-none rounded-lg overflow-hidden"
+                            />
+                        </div>
+                    )}
+                    
+                    {/* Pesan Status */}
+                    {message && (
+                        <div className={`p-3 rounded-lg ${message.startsWith('Gagal') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                            {message}
+                        </div>
+                    )}
+
+                    {/* Tombol Simpan */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3 text-lg font-bold text-white rounded-lg transition-all duration-200 
+                                   bg-[var(--color-primary)] hover:opacity-90 disabled:opacity-50"
+                    >
+                        {loading ? 'Menyimpan...' : 'Simpan Perubahan Tampilan'}
+                    </button>
+                </form>
+            </div>
         </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-6">
-            {/* Tema & Layout */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tema
-                </label>
-                <select
-                  name="tema"
-                  value={formData.tema}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="default">Default</option>
-                  <option value="minimal">Minimal</option>
-                  <option value="modern">Modern</option>
-                  <option value="classic">Classic</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Layout
-                </label>
-                <select
-                  name="layout"
-                  value={formData.layout}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="standard">Standard</option>
-                  <option value="wide">Wide</option>
-                  <option value="narrow">Narrow</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Warna */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Warna Primer
-                </label>
-                <input
-                  type="color"
-                  name="warnaPrimer"
-                  value={formData.warnaPrimer}
-                  onChange={handleChange}
-                  className="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Warna Sekunder
-                </label>
-                <input
-                  type="color"
-                  name="warnaSekunder"
-                  value={formData.warnaSekunder}
-                  onChange={handleChange}
-                  className="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
-                />
-              </div>
-            </div>
-
-            {/* Font */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Font Family
-              </label>
-              <select
-                name="fontFamily"
-                value={formData.fontFamily}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="inter">Inter</option>
-                <option value="roboto">Roboto</option>
-                <option value="poppins">Poppins</option>
-                <option value="opensans">Open Sans</option>
-              </select>
-            </div>
-
-            {/* Logo & Favicon */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  URL Logo
-                </label>
-                <input
-                  type="url"
-                  name="logo"
-                  value={formData.logo}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  URL Favicon
-                </label>
-                <input
-                  type="url"
-                  name="favicon"
-                  value={formData.favicon}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://..."
-                />
-              </div>
-            </div>
-
-            {/* Opsi Tampilan */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-gray-700">Opsi Tampilan</h3>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="tampilkanKategori"
-                  id="tampilkanKategori"
-                  checked={formData.tampilkanKategori}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="tampilkanKategori" className="ml-2 text-sm text-gray-700">
-                  Tampilkan Kategori
-                </label>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="tampilkanTestimoni"
-                  id="tampilkanTestimoni"
-                  checked={formData.tampilkanTestimoni}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="tampilkanTestimoni" className="ml-2 text-sm text-gray-700">
-                  Tampilkan Testimoni
-                </label>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="tampilkanChat"
-                  id="tampilkanChat"
-                  checked={formData.tampilkanChat}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="tampilkanChat" className="ml-2 text-sm text-gray-700">
-                  Tampilkan Chat Widget
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Simpan
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default TampilanModal;

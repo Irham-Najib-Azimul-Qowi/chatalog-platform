@@ -1,164 +1,51 @@
-import { useState } from 'react';
+import React from 'react';
+import { useToko } from '../../../hooks/useToko'; 
 
-/**
- * UpsellModal Component
- * Modal untuk mengelola upsell produk
- */
-const UpsellModal = ({ isOpen, onClose, onSave, data = null }) => {
-  const [formData, setFormData] = useState({
-    nama: data?.nama || '',
-    produkId: data?.produkId || '',
-    deskripsi: data?.deskripsi || '',
-    harga: data?.harga || '',
-    gambar: data?.gambar || '',
-    aktif: data?.aktif ?? true,
-  });
+const UpsellModal = () => {
+    // Ambil fungsi tutup modal dan nama fitur yang terkunci dari context
+    const { closeAdminModal, ui } = useToko();
+    const featureName = ui.upsellFeatureName; // Nama fitur yang dikirim dari AdminBarToko
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: Implement save logic
-    if (onSave) {
-      onSave(formData);
-    }
-    onClose();
-  };
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-[60] flex justify-center items-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+                <div className="p-6 text-center">
+                    
+                    <span className="text-6xl mb-4 block">💰</span>
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
+                    <h2 className="text-3xl font-bold text-red-600 mb-3">Upgrade Diperlukan!</h2>
+                    
+                    <p className="text-lg text-gray-700 mb-4">
+                        Fitur **{featureName || 'Ini'}** adalah fitur premium Chatalog.
+                    </p>
 
-  if (!isOpen) return null;
+                    <p className="text-gray-600 mb-6">
+                        Tingkatkan paket Anda untuk mendapatkan akses penuh ke fitur canggih ini, termasuk **Live Editing** untuk **{featureName}**.
+                    </p>
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">
-            {data ? 'Edit Upsell' : 'Tambah Upsell'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
-          >
-            ×
-          </button>
+                    <div className="space-y-3">
+                        {/* Tombol Aksi Utama (Arahkan ke halaman upgrade partner) */}
+                        <a 
+                            href="/chatalog/upgrade" 
+                            target="_blank"
+                            className="w-full block py-3 text-lg font-bold text-white rounded-lg transition-colors bg-green-600 hover:bg-green-700"
+                        >
+                            Lihat Opsi Upgrade
+                        </a>
+                        
+                        {/* Tombol Tutup */}
+                        <button
+                            onClick={closeAdminModal}
+                            className="w-full py-2 text-gray-600 hover:text-gray-800 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+                        >
+                            Kembali ke Editor
+                        </button>
+                    </div>
+
+                </div>
+            </div>
         </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nama Upsell
-              </label>
-              <input
-                type="text"
-                name="nama"
-                value={formData.nama}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Masukkan nama upsell"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Produk ID
-              </label>
-              <input
-                type="text"
-                name="produkId"
-                value={formData.produkId}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="ID produk terkait"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Deskripsi
-              </label>
-              <textarea
-                name="deskripsi"
-                value={formData.deskripsi}
-                onChange={handleChange}
-                rows="4"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Deskripsi upsell produk"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Harga
-              </label>
-              <input
-                type="number"
-                name="harga"
-                value={formData.harga}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0"
-                min="0"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                URL Gambar
-              </label>
-              <input
-                type="url"
-                name="gambar"
-                value={formData.gambar}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://..."
-              />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="aktif"
-                id="aktif"
-                checked={formData.aktif}
-                onChange={handleChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="aktif" className="ml-2 text-sm text-gray-700">
-                Aktif
-              </label>
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Simpan
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default UpsellModal;
-
