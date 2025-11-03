@@ -12,6 +12,9 @@ import ContactPage from './pages/chatalog/ContactPage';
 import SimulatorPage from './pages/chatalog/SimulatorPage';
 import LoginPage from './pages/chatalog/LoginPage';
 import RegisterPage from './pages/chatalog/RegisterPage';
+import OnboardingTutorial from './pages/chatalog/OnboardingTutorial'; // <-- TAMBAHKAN INI
+import OnboardingInfo from './pages/chatalog/OnboardingInfo';     // <-- TAMBAHKAN INI
+import EditorPage from './pages/chatalog/EditorPage';           // <-- TAMBAHKAN INI
 
 // === Halaman Template "Toko Klien" ===
 import TokoRenderer from './pages/toko/TokoRenderer';
@@ -44,7 +47,21 @@ function App() {
         <Route path="/simulator" element={<SimulatorPage />} />
         <Route path="/login" element={<LoginPage />} />
         {/* Halaman Onboarding */}
-        <Route path="/register" element={<RegisterPage />} />
+        {/* === Alur Onboarding & Registrasi === */}
+        {/* Step 1: Buat Akun */}
+        <Route path="/register" element={<RegisterPage />} /> 
+        
+        {/* Step 2: Tonton Tutorial */}
+        <Route path="/register/tutorial" element={<OnboardingTutorial />} />
+        
+        {/* Step 3: Isi Info Toko (Card UI) */}
+        <Route path="/register/info" element={<OnboardingInfo />} />
+        
+        {/* Step 4: Masuk ke Editor Canva */}
+        <Route path="/editor" element={<EditorPage />} /> 
+        {/* Catatan: Rute '/editor' akan jadi halaman utama Admin Toko.
+          Kita juga akan memproteksi rute ini nanti.
+        */}
 
         
         {/* === Rute untuk Toko Klien === 
