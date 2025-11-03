@@ -1,9 +1,11 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth'; // Kita akan pakai ini
+import { AuthProvider } from './contexts/AuthContext';
+import { useAuth } from './hooks/useAuth';
 
 // Komponen Global
 import AdminBar from './components/admin/AdminBar';
+import ChatalogLayout from './components/layout/ChatalogLayout'; // 1. Impor Layout Baru
 
 // === Halaman Web Utama "Chatalog" ===
 import HomePageChatalog from './pages/chatalog/HomePageChatalog';
@@ -15,53 +17,78 @@ import RegisterPage from './pages/chatalog/RegisterPage';
 
 // === Halaman Template "Toko Klien" ===
 import TokoRenderer from './pages/toko/TokoRenderer';
+import TokoLokasiPage from './pages/toko/TokoLokasiPage';
+import TokoAboutPage from './pages/toko/TokoAboutPage';
+import TokoContactPage from './pages/toko/TokoContactPage';
+import TokoBlogPage from './pages/toko/TokoBlogPage';
+import TokoGaleriPage from './pages/toko/TokoGaleriPage';
+
 
 // === Halaman Lain ===
 import NotFoundPage from './pages/NotFoundPage';
 
-function App() {
+// Komponen 'Loading'
+function AppLoading() {
   const { loading } = useAuth(); // Ambil status loading dari AuthContext
 
-  // Tampilkan loading spinner jika Firebase sedang cek status login
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <h1>Loading...</h1>
+      <div className="flex items-center justify-center h-screen">
+        <h1 className="text-xl font-semibold">Memuat...</h1>
       </div>
     );
   }
 
+  // Jika tidak loading, tampilkan rute aplikasi
   return (
-    <BrowserRouter>
+    <>
       {/* Admin Bar akan otomatis tampil di semua halaman jika kita login */}
       <AdminBar /> 
       
       <Routes>
         {/* === Rute untuk Web Utama "Chatalog" === */}
-        <Route path="/" element={<HomePageChatalog />} />
-        <Route path="/tentang" element={<AboutPage />} />
-        <Route path="/kontak" element={<ContactPage />} />
-        <Route path="/simulator" element={<SimulatorPage />} />
+        {/* 2. Bungkus semua halaman publik Chatalog dengan ChatalogLayout */}
+        <Route element={<ChatalogLayout />}>
+          <Route path="/" element={<HomePageChatalog />} />
+          <Route path="/tentang" element={<AboutPage />} />
+          <Route path="/kontak" element={<ContactPage />} />
+          <Route path="/simulator" element={<SimulatorPage />} />
+        </Route>
+        
+        {/* Halaman yang TIDAK pakai layout (misal: Login, Register) */}
         <Route path="/login" element={<LoginPage />} />
-        {/* Halaman Onboarding */}
         <Route path="/register" element={<RegisterPage />} />
-
         
-        {/* === Rute untuk Toko Klien === 
-          Ini adalah rute "ajaib" kita.
-          TokoRenderer akan menangani domain kustom atau slug /toko/:slug
-        */}
+        {/* === Rute untuk Toko Klien === */}
         <Route path="/toko/:slug" element={<TokoRenderer />} />
-
-        {/* TODO: Kita perlu menambahkan logika di Vercel & App.jsx
-          untuk menangani Custom Domain (misal: toko-kripik.com),
-          yang juga akan me-render <TokoRenderer />
-        */}
         
+        {/* Rute opsional untuk fitur halaman kustom */}
+        {/* CATATAN: Rute ini akan dirender DI DALAM TokoRenderer.
+          Kita perlu memodifikasi TokoRenderer (di tugas Teman Anda) 
+          untuk menangani rute-rute nested ini.
+          Untuk sekarang, ini adalah placeholder yang benar.
+        */}
+        <Route path="/toko/:slug/lokasi" element={<TokoLokasiPage />} />
+        <Route path="/toko/:slug/tentang" element={<TokoAboutPage />} />
+        <Route path="/toko/:slug/kontak" element={<TokoContactPage />} />
+        <Route path="/toko/:slug/blog" element={<TokoBlogPage />} />
+        <Route path="/toko/:slug/galeri" element={<TokoGaleriPage />} />
+
         {/* Halaman 404 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-    </BrowserRouter>
+    </>
+  );
+}
+
+// Fungsi App utama, sekarang hanya membungkus AuthProvider dan Router
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppLoading /> {/* Pindahkan logic loading ke komponen terpisah */}
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
