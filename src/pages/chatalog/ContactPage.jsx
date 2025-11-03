@@ -8,7 +8,7 @@ function ContactPage() {
       <p className="text-lg text-gray-700 mb-8">
         Punya pertanyaan? Kami siap membantu.
       </p>
-      {/* Placeholder: Nanti kita tambahkan form kontak di sini */}
+      {/* Nanti kita tambahkan form kontak di sini */}
       <form className="space-y-4">
         <div>
           <label className="block text-sm font-medium">Nama Anda</label>

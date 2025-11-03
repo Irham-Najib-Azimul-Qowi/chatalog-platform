@@ -17,12 +17,13 @@ function NavbarChatalog() {
         <Link to="/" className="text-2xl font-bold">
           Chatalog
         </Link>
-
+        
         {/* Tengah: Menu Navigasi */}
         <div className="hidden md:flex space-x-6">
           <NavLink 
             to="/" 
             className={({ isActive }) => isActive ? activeClass : inactiveClass}
+            end // 'end' penting agar tidak aktif di rute /tentang
           >
             Home
           </NavLink>
@@ -45,7 +46,7 @@ function NavbarChatalog() {
             Kontak
           </NavLink>
         </div>
-
+        
         {/* Kanan: Tombol Aksi */}
         <div>
           {!currentUser ? (
@@ -57,7 +58,9 @@ function NavbarChatalog() {
               Login
             </Link>
           ) : (
-            <span className="text-sm">Selamat Datang!</span>
+            // Jika sudah login, Super Admin Bar akan muncul di atas ini,
+            // jadi kita tidak perlu menampilkan apa-apa di sini.
+            null 
           )}
         </div>
       </nav>
