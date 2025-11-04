@@ -1,234 +1,152 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from '../../../services/firebase';
+import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
+import Spinner from '../../common/Spinner';
 
-/**
- * SuperAdmin_ContentModal Component
- * Modal untuk mengelola konten sistem (Super Admin)
- */
-const SuperAdmin_ContentModal = ({ isOpen, onClose, onSave, data = null }) => {
-  const [formData, setFormData] = useState({
-    tipe: data?.tipe || 'page', // page, banner, announcement, dll
-    judul: data?.judul || '',
-    konten: data?.konten || '',
-    gambar: data?.gambar || '',
-    lokasi: data?.lokasi || 'homepage', // dimana konten akan ditampilkan
-    urutan: data?.urutan || '',
-    tanggalMulai: data?.tanggalMulai || '',
-    tanggalSelesai: data?.tanggalSelesai || '',
-    targetAudience: data?.targetAudience || 'all', // all, superadmin, toko_admin
-    aktif: data?.aktif ?? true,
+// Modal untuk Super Admin mengedit konten publik web Chatalog [cite: IV.B]
+function SuperAdminContentModal({ isOpen, onClose }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  // State untuk menampung data dari DUA dokumen (homepage & about_us)
+  const [content, setContent] = useState({
+    heroTitle: '',
+    storyText: '',
+    aboutText: ''
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: Implement save logic
-    if (onSave) {
-      onSave(formData);
+  // 1. Ambil data saat modal dibuka
+  useEffect(() => {
+    if (isOpen) {
+      const fetchContent = async () => {
+        setLoading(true);
+        setError('');
+        try {
+          // Kita akan ambil dari koleksi 'chatalog_content' [cite: my_last_response]
+          const homepageDocRef = doc(db, "chatalog_content", "homepage");
+          const aboutDocRef = doc(db, "chatalog_content", "about_us");
+          
+          const [homepageSnap, aboutSnap] = await Promise.all([
+            getDoc(homepageDocRef),
+            getDoc(aboutDocRef)
+          ]);
+          
+          setContent({
+            heroTitle: homepageSnap.data()?.heroTitle || '',
+            storyText: homepageSnap.data()?.storyText || '',
+            aboutText: aboutSnap.data()?.team_profile || '' // Sesuai rencana kita [cite: my_last_response]
+          });
+        } catch (err) {
+          console.error("Gagal memuat konten:", err);
+          setError("Gagal memuat konten");
+        }
+        setLoading(false);
+      };
+      fetchContent();
     }
-    onClose();
+  }, [isOpen]);
+
+  // 2. Handle perubahan di form
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setContent(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+  // 3. Simpan data kembali ke Firestore
+  const handleSave = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const homepageDocRef = doc(db, "chatalog_content", "homepage");
+      const aboutDocRef = doc(db, "chatalog_content", "about_us");
+      
+      // Gunakan setDoc dengan { merge: true } (atau updateDoc)
+      // Ini akan membuat dokumen jika belum ada, atau memperbarui jika sudah ada
+      await setDoc(homepageDocRef, {
+        heroTitle: content.heroTitle,
+        storyText: content.storyText
+      }, { merge: true });
+      
+      await setDoc(aboutDocRef, {
+        team_profile: content.aboutText
+      }, { merge: true });
+      
+      alert("Konten berhasil disimpan!");
+      onClose();
+    } catch (err) {
+      console.error("Gagal menyimpan:", err);
+      setError("Gagal menyimpan konten");
+    }
+    setLoading(false);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">
-            {data ? 'Edit Konten' : 'Tambah Konten'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="text-xl font-bold">Edit Konten Publik Chatalog</h2>
+          <button onClick={onClose} className="text-2xl">&times;</button>
+        </div>
+        
+        {/* Body (Form) */}
+        <div className="p-6 overflow-y-auto">
+          {loading && <div className="flex justify-center"><Spinner /></div>}
+          {error && <p className="text-red-500 text-center">{error}</p>}
+          {!loading && (
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Homepage Hero Title [cite: VIII.B]</label>
+                <input 
+                  type="text" 
+                  name="heroTitle" 
+                  value={content.heroTitle} 
+                  onChange={handleChange} 
+                  className="w-full mt-1 p-2 border rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Homepage Story Text [cite: VIII.B]</label>
+                <textarea 
+                  name="storyText" 
+                  rows="3"
+                  value={content.storyText} 
+                  onChange={handleChange} 
+                  className="w-full mt-1 p-2 border rounded-md"
+                ></textarea>
+              </div>
+              <hr/>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">About Us Team Profile [cite: IV.A, VIII.B]</label>
+                <textarea 
+                  name="aboutText" 
+                  rows="5"
+                  value={content.aboutText} 
+                  onChange={handleChange} 
+                  className="w-full mt-1 p-2 border rounded-md"
+                ></textarea>
+              </div>
+            </form>
+          )}
+        </div>
+        
+        {/* Footer (Tombol Aksi) */}
+        <div className="flex justify-end p-4 border-t bg-gray-50">
+          <button onClick={onClose} className="bg-gray-300 text-gray-800 px-4 py-2 rounded-md mr-2 hover:bg-gray-400">
+            Batal
+          </button>
+          <button 
+            onClick={handleSave} 
+            disabled={loading} 
+            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:bg-indigo-300"
           >
-            ×
+            {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
           </button>
         </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tipe Konten
-                </label>
-                <select
-                  name="tipe"
-                  value={formData.tipe}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="page">Halaman</option>
-                  <option value="banner">Banner</option>
-                  <option value="announcement">Pengumuman</option>
-                  <option value="popup">Popup</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Lokasi Tampil
-                </label>
-                <select
-                  name="lokasi"
-                  value={formData.lokasi}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="homepage">Homepage</option>
-                  <option value="dashboard">Dashboard</option>
-                  <option value="all">Semua Halaman</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Judul
-              </label>
-              <input
-                type="text"
-                name="judul"
-                value={formData.judul}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Judul konten"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                URL Gambar (opsional)
-              </label>
-              <input
-                type="url"
-                name="gambar"
-                value={formData.gambar}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://..."
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Konten
-              </label>
-              <textarea
-                name="konten"
-                value={formData.konten}
-                onChange={handleChange}
-                rows="8"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Isi konten (support HTML)"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Target Audience
-                </label>
-                <select
-                  name="targetAudience"
-                  value={formData.targetAudience}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">Semua User</option>
-                  <option value="superadmin">Super Admin</option>
-                  <option value="toko_admin">Owner Toko</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Urutan Tampil
-                </label>
-                <input
-                  type="number"
-                  name="urutan"
-                  value={formData.urutan}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0"
-                  min="0"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tanggal Mulai
-                </label>
-                <input
-                  type="date"
-                  name="tanggalMulai"
-                  value={formData.tanggalMulai}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tanggal Selesai
-                </label>
-                <input
-                  type="date"
-                  name="tanggalSelesai"
-                  value={formData.tanggalSelesai}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="aktif"
-                id="aktif"
-                checked={formData.aktif}
-                onChange={handleChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="aktif" className="ml-2 text-sm text-gray-700">
-                Aktif
-              </label>
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Simpan
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );
-};
+}
 
-export default SuperAdmin_ContentModal;
-
+export default SuperAdminContentModal;
