@@ -5,7 +5,6 @@ import { doc, setDoc, addDoc, collection } from "firebase/firestore";
 import { auth, db } from '../../services/firebase';
 import { useAuth } from '../../hooks/useAuth'; // <-- 1. IMPOR useAuth
 
-// Step 1: Halaman Pendaftaran Akun
 function RegisterPage() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -25,7 +24,6 @@ function RegisterPage() {
       return;
     }
 
-    // Trik "email" dari No. Telp
     const email = `${phone}@chatalog.com`;
 
     try {
@@ -33,21 +31,21 @@ function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Buat dokumen 'toko' kosong dulu di koleksi 'tokos'
+      // 2. Buat dokumen 'toko'
       const newTokoRef = await addDoc(collection(db, "tokos"), {
         ownerUid: user.uid,
-        name: `Toko Baru (${phone})`, // Nama sementara
+        name: `Toko Baru (${phone})`,
         createdAt: new Date(),
       });
 
-      // 3. Buat dokumen 'users' kita, yang menunjuk ke 'tokoId' baru
+      // 3. Buat dokumen 'users' kita
       await setDoc(doc(db, "users", user.uid), {
-        name: `Admin (${phone})`, // Nama sementara
-        role: "toko_admin", // Role Admin Toko
-        tokoId: newTokoRef.id, // Link ke dokumen toko
+        name: `Admin (${phone})`,
+        role: "toko_admin",
+        tokoId: newTokoRef.id,
       });
 
-      // 4. (Opsional) Buat dokumen 'features' & 'settings' default
+      // 4. Buat dokumen 'features' & 'settings' default
       await setDoc(doc(db, `tokos/${newTokoRef.id}/features`, 'flags'), {
         show_location_page: false,
         show_mitra_section: false,
@@ -55,15 +53,15 @@ function RegisterPage() {
         allow_custom_theme: false,
       });
       await setDoc(doc(db, `tokos/${newTokoRef.id}/settings`, 'config'), {
-        themeName: 'Kombinasi 1', // Default tema
+        themeName: 'Kombinasi 1',
       });
-
-      // --- 5. PERBAIKAN BUG: "Bangunkan" AuthContext ---
+      
+      // --- 5. PERBAIKAN CACAT #4 ---
       // Panggil refreshUserData SETELAH data Firestore ditulis
       await refreshUserData(user.uid);
       // --- AKHIR PERBAIKAN ---
 
-      // 6. Arahkan ke langkah selanjutnya: Tutorial
+      // 6. Arahkan ke tutorial
       navigate('/register/tutorial');
 
     } catch (err) {

@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { auth, db } from '../services/firebase';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth"; // Pastikan ini diimpor
 import { doc, getDoc } from "firebase/firestore";
 
 export const AuthContext = createContext(null);
@@ -11,8 +11,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // ... (Fungsi onAuthStateChanged Anda tetap sama persis) ...
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true); // <-- Perbaikan Cacat #7: Set loading saat auth berubah
       if (user) {
         const userDocRef = doc(db, "users", user.uid);
         const userDocSnap = await getDoc(userDocRef);
@@ -33,9 +33,7 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // --- 1. TAMBAHKAN FUNGSI BARU INI ---
-  // Fungsi ini akan dipanggil manual oleh RegisterPage
-  // setelah user document BERHASIL ditulis.
+  // Perbaikan Cacat #5: Fungsi untuk merefresh data user
   const refreshUserData = async (uid) => {
     if (!uid) return;
     
@@ -49,24 +47,27 @@ export const AuthProvider = ({ children }) => {
       console.error("refreshUserData: Gagal menemukan dokumen user.");
     }
   };
-  // --- AKHIR FUNGSI BARU ---
 
-
+  // --- PERBAIKAN CACAT #1 DIMULAI DI SINI ---
   const login = (phone, password) => {
-    // ... (fungsi login Anda) ...
+    const email = `${phone}@chatalog.com`;
+    // Fungsi ini sekarang DIISI dengan logic Firebase
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = () => {
-    // ... (fungsi logout Anda) ...
+    // Fungsi ini sekarang DIISI dengan logic Firebase
+    return signOut(auth);
   };
+  // --- PERBAIKAN CACAT #1 SELESAI ---
 
   const value = {
     currentUser,
     userData,
     loading,
-    login,
-    logout,
-    refreshUserData // <-- 2. EKSPOR FUNGSI BARU DI SINI
+    login, // Sekarang berisi fungsi asli
+    logout, // Sekarang berisi fungsi asli
+    refreshUserData // Diekspor untuk dipakai RegisterPage
   };
 
   return (

@@ -1,165 +1,140 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from '../../../services/firebase';
+import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 
-/**
- * SuperAdmin_OrderModal Component
- * Modal untuk melihat dan mengelola order (Super Admin)
- */
-const SuperAdmin_OrderModal = ({ isOpen, onClose, order = null, onUpdate }) => {
-  const [status, setStatus] = useState(order?.status || '');
+// Modal untuk memvalidasi order baru [cite: IV.B, III.B]
+function SuperAdminOrderModal({ isOpen, onClose }) {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleStatusChange = (newStatus) => {
-    setStatus(newStatus);
-    // TODO: Implement status update logic
-    if (onUpdate) {
-      onUpdate(order?.id, { status: newStatus });
+  // Fungsi untuk memuat data pesanan
+  const fetchOrders = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // 1. Ambil semua pesanan dari Firestore [cite: user_s_previous_context]
+      const ordersRef = collection(db, "orders");
+      // 2. Filter hanya yang statusnya "Menunggu Validasi" [cite: user_s_previous_context]
+      const q = query(ordersRef, where("status", "==", "Menunggu Validasi"));
+      
+      const querySnapshot = await getDocs(q);
+      const ordersList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setOrders(ordersList);
+      
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+      setError("Gagal memuat pesanan.");
     }
+    setLoading(false);
   };
 
-  if (!isOpen || !order) return null;
+  // Panggil fetchOrders() saat modal pertama kali dibuka
+  useEffect(() => {
+    if (isOpen) {
+      fetchOrders();
+    }
+  }, [isOpen]);
+
+  // Fungsi untuk menyetujui pesanan [cite: III.B]
+  const handleApprove = async (orderId, tokoId, userId) => {
+    if (!window.confirm("Anda yakin ingin menyetujui pesanan ini? Ini akan membuat toko 'live' dan mengubah role user.")) {
+      return;
+    }
+    
+    try {
+      // 1. Update status pesanan di 'orders'
+      const orderDocRef = doc(db, "orders", orderId);
+      await updateDoc(orderDocRef, {
+        status: "Selesai"
+      });
+      
+      // 2. Update status toko di 'tokos' (misal: 'pending' jadi 'active')
+      const tokoDocRef = doc(db, "tokos", tokoId);
+      await updateDoc(tokoDocRef, {
+        status: "active" // Asumsi ada field status
+      });
+
+      // 3. Update role user dari 'toko_admin_pending' ke 'toko_admin'
+      // (Kita asumsikan user ID disimpan di dokumen order)
+      if (userId) {
+        const userDocRef = doc(db, "users", userId);
+        await updateDoc(userDocRef, {
+          role: "toko_admin" // Mengaktifkan user
+        });
+      }
+      
+      alert("Pesanan disetujui! Toko sudah aktif.");
+      fetchOrders(); // Muat ulang daftar pesanan
+      
+    } catch (err) {
+      console.error("Gagal menyetujui:", err);
+      alert("Gagal menyetujui pesanan.");
+    }
+  };
+  
+  // Fungsi untuk menolak (menghapus) pesanan
+  const handleReject = async (orderId) => {
+     if (!window.confirm("Anda yakin ingin MENOLAK pesanan ini? Ini akan menghapus data order.")) {
+      return;
+    }
+     // TODO: Hapus dokumen order, atau set status "Ditolak"
+     alert("Pesanan ditolak (fitur belum dibuat).");
+  }
+
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Detail Order</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
-          >
-            ×
-          </button>
+    // Latar belakang modal
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+      {/* Konten Modal */}
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="text-xl font-bold">Manajemen Order [cite: IV.B]</h2>
+          <button onClick={onClose} className="text-2xl">&times;</button>
         </div>
-
-        <div className="space-y-4">
-          {/* Info Order */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Informasi Order</h3>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-gray-600">Order ID:</span>
-                <span className="ml-2 font-medium">{order.id || 'N/A'}</span>
+        
+        {/* Body (Daftar Order) */}
+        <div className="p-6 overflow-y-auto">
+          {loading && <p>Memuat pesanan...</p>}
+          {error && <p className="text-red-500">{error}</p>}
+          
+          <div className="space-y-4">
+            {orders.length === 0 && !loading && <p>Tidak ada pesanan baru.</p>}
+            
+            {orders.map(order => (
+              <div key={order.id} className="border p-4 rounded-md">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-bold">Toko ID: {order.tokoId}</p>
+                    {/* Kita perlu mengambil nama toko, tapi ini cukup */}
+                    <p className="text-sm text-gray-600">User ID: {order.ownerUid || 'N/A'}</p> 
+                    <p className="text-sm text-gray-600">Total: Rp {order.totalHarga || 0}</p>
+                  </div>
+                  <div className="flex space-x-2">
+                     <button 
+                      onClick={() => handleReject(order.id)}
+                      className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500"
+                    >
+                      Tolak
+                    </button>
+                    <button 
+                      onClick={() => handleApprove(order.id, order.tokoId, order.ownerUid)}
+                      className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+                    >
+                      Approve
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div>
-                <span className="text-gray-600">Tanggal:</span>
-                <span className="ml-2 font-medium">
-                  {order.tanggal || new Date().toLocaleDateString()}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Nama Toko:</span>
-                <span className="ml-2 font-medium">{order.namaToko || 'N/A'}</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Status:</span>
-                <span className="ml-2 font-medium">{status || order.status || 'N/A'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Info Customer */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Informasi Customer</h3>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-gray-600">Nama:</span>
-                <span className="ml-2 font-medium">{order.namaCustomer || 'N/A'}</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Email:</span>
-                <span className="ml-2 font-medium">{order.emailCustomer || 'N/A'}</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Telepon:</span>
-                <span className="ml-2 font-medium">{order.telpCustomer || 'N/A'}</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Alamat:</span>
-                <span className="ml-2 font-medium">{order.alamatCustomer || 'N/A'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Daftar Produk */}
-          <div>
-            <h3 className="font-semibold mb-2">Daftar Produk</h3>
-            <div className="border rounded-lg overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Produk</th>
-                    <th className="px-4 py-2 text-center">Qty</th>
-                    <th className="px-4 py-2 text-right">Harga</th>
-                    <th className="px-4 py-2 text-right">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {order.items && order.items.length > 0 ? (
-                    order.items.map((item, index) => (
-                      <tr key={index} className="border-t">
-                        <td className="px-4 py-2">{item.nama || 'Produk'}</td>
-                        <td className="px-4 py-2 text-center">{item.qty || 0}</td>
-                        <td className="px-4 py-2 text-right">
-                          Rp {parseInt(item.harga || 0).toLocaleString('id-ID')}
-                        </td>
-                        <td className="px-4 py-2 text-right">
-                          Rp {parseInt((item.harga || 0) * (item.qty || 0)).toLocaleString('id-ID')}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="4" className="px-4 py-2 text-center text-gray-500">
-                        Tidak ada item
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Total */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="flex justify-between items-center">
-              <span className="text-lg font-semibold">Total:</span>
-              <span className="text-xl font-bold">
-                Rp {parseInt(order.total || 0).toLocaleString('id-ID')}
-              </span>
-            </div>
-          </div>
-
-          {/* Update Status */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Update Status Order
-            </label>
-            <select
-              value={status}
-              onChange={(e) => handleStatusChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="processing">Processing</option>
-              <option value="shipped">Shipped</option>
-              <option value="delivered">Delivered</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
+            ))}
           </div>
         </div>
-
-        <div className="flex justify-end space-x-3 mt-6">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-          >
-            Tutup
-          </button>
-        </div>
+        
       </div>
     </div>
   );
-};
+}
 
-export default SuperAdmin_OrderModal;
+export default SuperAdminOrderModal;
