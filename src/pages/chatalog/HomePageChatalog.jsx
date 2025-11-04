@@ -62,9 +62,9 @@ function HomePageChatalog() {
 
   return (
     <>
-      {/* Navbar dan Footer sudah diurus oleh ChatalogLayout [cite: my_last_response] */}
+      {/* Navbar dan Footer sudah diurus oleh ChatalogLayout */}
       
-      {/* Bagian 1: Hero Section (Desain Ulang) [cite: user's previous context] */}
+      {/* Bagian 1: Hero Section (Desain Ulang) */}
       <section 
         className="bg-gradient-to-b from-white to-gray-50 text-center py-20 md:py-32"
       >
@@ -74,7 +74,7 @@ function HomePageChatalog() {
           </h1>
           <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
             Platform Chatalog dirancang khusus untuk UMKM Indonesia. Dapatkan website
-            profesional dengan editor visual yang mudah dipahami [cite: user's previous context] dan terintegrasi AI [cite: VI].
+            profesional dengan editor visual yang mudah dipahami dan terintegrasi AI.
           </p>
           <Link 
             to="/register" 
@@ -87,7 +87,7 @@ function HomePageChatalog() {
         </div>
       </section>
 
-      {/* Bagian 2: Statistik (Counter) [cite: user's previous context] */}
+      {/* Bagian 2: Statistik (Counter) */}
       {/* 3. Tempelkan ref ke elemen ini */}
       <section ref={countUpRef} className="bg-white py-20">
         <div className="container mx-auto px-6 text-center">
@@ -106,14 +106,14 @@ function HomePageChatalog() {
         </div>
       </section>
 
-      {/* Bagian 3: Logo Cloud (Portofolio) [cite: user's previous context, IV.A] */}
+      {/* Bagian 3: Logo Cloud (Portofolio) */}
       <section className="bg-gray-50 py-20">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-2xl font-semibold text-gray-800 mb-12">
             Telah Dipercaya oleh Berbagai Bisnis
           </h2>
           <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-70">
-            {/* Placeholder logo klien [cite: IV.A, VIII.B] */}
+            {/* Placeholder logo klien */}
             <p className="text-3xl font-bold text-gray-500">LOGO KLIEN A</p>
             <p className="text-3xl font-bold text-gray-500">LOGO KLIEN B</p>
             <p className="text-3xl font-bold text-gray-500">LOGO KLIEN C</p>
@@ -123,12 +123,12 @@ function HomePageChatalog() {
         </div>
       </section>
       
-      {/* Bagian 4: Kisah Chatalog (Tetap Sama) [cite: IV.A, VIII.B] */}
+      {/* Bagian 4: Kisah Chatalog (Tetap Sama) */}
       <section className="bg-white py-20">
         <div className="container mx-auto px-6 max-w-4xl text-center">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Kisah Kami</h2>
             <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-              Chatalog dimulai dari sebuah visi sederhana: memberdayakan setiap UMKM [cite: II] di Indonesia
+              Chatalog dimulai dari sebuah visi sederhana: memberdayakan setiap UMKM di Indonesia
               dengan alat digital yang setara dengan bisnis besar. Kami percaya teknologi
               harusnya mudah dan terjangkau.
             </p>
