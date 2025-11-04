@@ -3,11 +3,20 @@ import { useToko } from '../../../hooks/useToko';
 import { saveProduct, deleteProduct } from '../../../services/firebaseFunctions';
 import { uploadImageToCloudinary } from '../../../services/cloudinary'; 
 
-// Fungsi bantuan (dari Step 2)
+// Fungsi bantuan
 const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 
+// Default state produk baru
+const defaultNewProduct = { 
+    name: '', 
+    description: '', 
+    price: 0, 
+    imageUrl: '', 
+    isFeatured: false 
+};
 
 const ProdukModal = () => {
+    // Ambil produk (array real-time), tokoId, dan fungsi UI
     const { produk, info, closeAdminModal } = useToko();
     
     // State UI
@@ -17,7 +26,7 @@ const ProdukModal = () => {
     const [isFormOpen, setIsFormOpen] = useState(false); // Status form CRUD
     const [imageFile, setImageFile] = useState(null); // Untuk file gambar yang baru diupload
 
-    const storeSlug = info?.slug;
+    const tokoId = info?.tokoId; // Ambil tokoId dari TokoContext
 
     // --- LOGIKA UTAMA MODAL ---
 
@@ -29,13 +38,7 @@ const ProdukModal = () => {
     };
 
     const handleNewProduct = () => {
-        setCurrentProduct({ 
-            nama: '', 
-            deskripsi_singkat: '', 
-            harga: 0, 
-            gambar_url: '', 
-            isFeatured: false 
-        });
+        setCurrentProduct(defaultNewProduct);
         setIsFormOpen(true);
         setMessage('');
         setImageFile(null);
@@ -45,20 +48,20 @@ const ProdukModal = () => {
         const { name, value, type, checked } = e.target;
         setCurrentProduct(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : (name === 'harga' ? parseInt(value) || 0 : value),
+            [name]: type === 'checkbox' ? checked : (name === 'price' ? parseInt(value) || 0 : value),
         }));
     };
 
     // --- SUBMIT FORM (UPLOAD & SAVE) ---
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (loading || !storeSlug || !currentProduct?.nama) return;
+        if (loading || !tokoId || !currentProduct?.name) return;
 
         setLoading(true);
         setMessage('');
 
         try {
-            let finalImageUrl = currentProduct.gambar_url;
+            let finalImageUrl = currentProduct.imageUrl;
 
             // 1. Upload Gambar Baru ke Cloudinary jika ada file baru
             if (imageFile) {
@@ -69,17 +72,15 @@ const ProdukModal = () => {
             // 2. Siapkan data produk akhir
             const productToSave = {
                 ...currentProduct,
-                gambar_url: finalImageUrl,
+                imageUrl: finalImageUrl,
             };
 
             // 3. Simpan ke Firestore
             setMessage('Menyimpan data produk ke Firestore...');
-            const result = await saveProduct(storeSlug, productToSave);
-
+            const result = await saveProduct(tokoId, productToSave); // Menggunakan tokoId
+            
             setMessage(result.message);
-            setIsFormOpen(false);
-            setCurrentProduct(null);
-            setImageFile(null);
+            // Tidak perlu menutup form setelah save, agar admin bisa edit lagi
 
         } catch (error) {
             setMessage(`Gagal menyimpan produk: ${error.message}`);
@@ -90,13 +91,16 @@ const ProdukModal = () => {
     
     // --- DELETE PRODUK ---
     const handleDelete = async () => {
-        if (!currentProduct?.id || !window.confirm(`Yakin ingin menghapus produk "${currentProduct.nama}"?`)) return;
+        // ID produk unik adalah field 'id' di objek produk (doc.id Firestore)
+        if (!currentProduct?.id || !window.confirm(`Yakin ingin menghapus produk "${currentProduct.name}"?`)) return;
 
         setLoading(true);
-        setMessage('');
+        setMessage('Menghapus produk...');
         try {
-            await deleteProduct(storeSlug, currentProduct);
+            await deleteProduct(tokoId, currentProduct.id); // Menggunakan tokoId dan produk.id
             setMessage('Produk berhasil dihapus.');
+            
+            // Reset form
             setIsFormOpen(false);
             setCurrentProduct(null);
         } catch (error) {
@@ -129,7 +133,7 @@ const ProdukModal = () => {
                                 className={`p-3 text-sm rounded-lg cursor-pointer transition 
                                             ${currentProduct?.id === p.id ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
                             >
-                                {p.nama} - {formatRupiah(p.harga)}
+                                {p.name} - {formatRupiah(p.price)}
                             </li>
                         ))}
                     </ul>
@@ -143,6 +147,7 @@ const ProdukModal = () => {
 
                 {/* 2. Panel Form CRUD (Kanan) */}
                 <div className="w-full md:w-2/3 p-6">
+                    {/* Pesan Status */}
                     {message && (
                         <div className={`p-3 rounded-lg mb-4 text-sm ${message.startsWith('Gagal') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                             {message}
@@ -164,30 +169,30 @@ const ProdukModal = () => {
                             {/* Nama Produk */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Nama Produk</label>
-                                <input type="text" name="nama" value={currentProduct.nama} onChange={handleInputChange} 
+                                <input type="text" name="name" value={currentProduct.name} onChange={handleInputChange} 
                                     className="mt-1 block w-full border border-gray-300 rounded-md p-2" required />
                             </div>
 
                             {/* Harga */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Harga (IDR)</label>
-                                <input type="number" name="harga" value={currentProduct.harga} onChange={handleInputChange} 
+                                <input type="number" name="price" value={currentProduct.price} onChange={handleInputChange} 
                                     className="mt-1 block w-full border border-gray-300 rounded-md p-2" required />
                             </div>
 
                             {/* Deskripsi Singkat */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Deskripsi Singkat</label>
-                                <textarea name="deskripsi_singkat" value={currentProduct.deskripsi_singkat} onChange={handleInputChange} rows="3"
+                                <textarea name="description" value={currentProduct.description} onChange={handleInputChange} rows="3"
                                     className="mt-1 block w-full border border-gray-300 rounded-md p-2"></textarea>
                             </div>
 
                             {/* Gambar Produk */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Gambar Produk (Max 5MB)</label>
-                                {currentProduct.gambar_url && !imageFile && (
+                                {currentProduct.imageUrl && !imageFile && (
                                     <div className="mb-2">
-                                        <img src={currentProduct.gambar_url} alt="Gambar saat ini" className="w-32 h-32 object-cover rounded-md" />
+                                        <img src={currentProduct.imageUrl} alt="Gambar saat ini" className="w-32 h-32 object-cover rounded-md" />
                                         <p className="text-xs text-gray-500 mt-1">Gambar saat ini. Pilih file untuk mengganti.</p>
                                     </div>
                                 )}
@@ -211,6 +216,7 @@ const ProdukModal = () => {
                                     disabled={loading}
                                     className="py-2 px-6 font-bold text-white rounded-lg transition-colors 
                                                 bg-[var(--color-primary)] hover:opacity-90 disabled:opacity-50"
+                                    style={{ backgroundColor: currentProduct.id ? 'var(--color-primary)' : '#10b981' }} // Warna berbeda untuk Buat/Simpan
                                 >
                                     {loading ? 'Memproses...' : (currentProduct.id ? 'Simpan Perubahan' : 'Buat Produk')}
                                 </button>

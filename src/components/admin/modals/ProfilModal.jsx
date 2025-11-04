@@ -1,161 +1,110 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../../hooks/useAuth';
-import { db, auth } from '../../../services/firebase'; // Kita butuh 'auth'
-import { doc, updateDoc } from 'firebase/firestore';
-import { updatePassword } from 'firebase/auth'; // Fungsi untuk ganti password
+import React, { useState } from 'react';
+import { useToko } from '../../../hooks/useToko';
+import { updateStoreInfo } from '../../../services/firebaseFunctions';
 
-// Modal untuk mengedit profil user yang sedang login [cite: IV.B, V.B]
-function ProfilModal({ isOpen, onClose }) {
-  const { currentUser, userData, refreshUserData } = useAuth(); // Ambil 'refresh'
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+const ProfilModal = () => {
+    const { info, closeAdminModal, settings } = useToko();
+    
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
+    
+    // State lokal untuk form: name, slogan, dan deskripsi singkat
+    const [formData, setFormData] = useState({
+        name: info.name || '',
+        slug: info.slug || '', // Hanya untuk tampilan, tidak bisa diedit
+        deskripsi_singkat: info.deskripsi_singkat || '', // Asumsi field ini ada
+    });
 
-  // Isi form dengan data saat modal dibuka
-  useEffect(() => {
-    if (isOpen && userData) {
-      setName(userData.name || '');
-    }
-    // Reset state
-    setError('');
-    setSuccess('');
-    setPassword('');
-    setPasswordConfirm('');
-  }, [isOpen, userData]);
+    const tokoId = info?.tokoId; 
+    const primaryColor = settings?.colors?.primary;
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccess('');
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
 
-    // Validasi
-    if (password && password.length < 6) {
-      setError("Password baru harus minimal 6 karakter.");
-      setLoading(false);
-      return;
-    }
-    if (password && password !== passwordConfirm) {
-      setError("Konfirmasi password tidak cocok.");
-      setLoading(false);
-      return;
-    }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (loading || !tokoId) return;
+        
+        setLoading(true);
+        setMessage('');
 
-    try {
-      const promises = [];
-      
-      // 1. Update Nama di Firestore
-      if (name !== userData.name) {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        promises.push(updateDoc(userDocRef, { name: name }));
-      }
-      
-      // 2. Update Password di Firebase Auth
-      if (password) {
-        promises.push(updatePassword(currentUser, password));
-      }
-      
-      await Promise.all(promises);
-      
-      // 3. Refresh Auth context jika nama berubah
-      if (name !== userData.name) {
-        await refreshUserData(currentUser.uid); // Panggil refresh [cite: my_last_response]
-      }
-      
-      setSuccess("Profil berhasil diperbarui!");
-      setPassword('');
-      setPasswordConfirm('');
-      
-    } catch (err) {
-      console.error("Gagal update profil:", err);
-      // Firebase auth error (jika perlu re-login)
-      if (err.code === 'auth/requires-recent-login') {
-        setError("Ganti password gagal. Harap logout dan login kembali, lalu coba lagi.");
-      } else {
-        setError("Gagal memperbarui profil.");
-      }
-    }
-    setLoading(false);
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
-        <form onSubmit={handleSave}>
-          {/* Header */}
-          <div className="flex justify-between items-center p-4 border-b">
-            <h2 className="text-xl font-bold">Edit Profil</h2>
-            <button type="button" onClick={onClose} className="text-2xl">&times;</button>
-          </div>
-          
-          {/* Body (Form) */}
-          <div className="p-6 overflow-y-auto space-y-4">
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-            {success && <p className="text-green-500 text-sm text-center">{success}</p>}
+        try {
+            // Hanya kirim field yang ingin diupdate ke dokumen Induk Toko
+            const update = { 
+                name: formData.name, 
+                deskripsi_singkat: formData.deskripsi_singkat 
+            };
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email/Telepon (Login)</label>
-              <input 
-                type="text" 
-                value={currentUser.email} // Ambil dari Auth
-                disabled 
-                className="w-full mt-1 p-2 border rounded-md bg-gray-100"
-              />
-            </div>
+            await updateStoreInfo(tokoId, update); 
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Nama Tampilan</label>
-              <input 
-                type="text" 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
-                className="w-full mt-1 p-2 border rounded-md"
-              />
+            setMessage('Profil Toko berhasil diperbarui! Perubahan sudah terlihat.');
+            
+            // Tunggu sebentar lalu tutup modal
+            setTimeout(closeAdminModal, 1000); 
+
+        } catch (error) {
+            setMessage(`Gagal menyimpan: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <div className="p-6 border-b flex justify-between items-center">
+                    <h2 className="text-2xl font-bold" style={{ color: primaryColor }}>Atur Profil Toko</h2>
+                    <button onClick={closeAdminModal} className="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    {/* Nama Toko */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Nama Toko</label>
+                        <input type="text" name="name" value={formData.name} onChange={handleInputChange} 
+                            className="mt-1 block w-full border border-gray-300 rounded-md p-2" required />
+                    </div>
+
+                    {/* Slug URL (Read-Only) */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">URL Slug Publik</label>
+                        <input type="text" value={formData.slug} readOnly
+                            className="mt-1 block w-full border border-gray-300 bg-gray-50 rounded-md p-2 text-sm" />
+                        <p className="text-xs text-gray-500 mt-1">Slug tidak bisa diubah setelah pendaftaran.</p>
+                    </div>
+
+                    {/* Deskripsi Singkat */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Deskripsi Singkat/Slogan</label>
+                        <textarea name="deskripsi_singkat" value={formData.deskripsi_singkat} onChange={handleInputChange} rows="3"
+                            className="mt-1 block w-full border border-gray-300 rounded-md p-2"></textarea>
+                    </div>
+                    
+                    {/* Pesan Status */}
+                    {message && (
+                        <div className={`p-3 rounded-lg ${message.startsWith('Gagal') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                            {message}
+                        </div>
+                    )}
+
+                    {/* Tombol Simpan */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3 text-lg font-bold text-white rounded-lg transition-all duration-200 hover:opacity-90 disabled:opacity-50"
+                        style={{ backgroundColor: primaryColor }}
+                    >
+                        {loading ? 'Menyimpan...' : 'Simpan Profil'}
+                    </button>
+                </form>
             </div>
-            <hr/>
-            <p className="text-sm text-gray-500">Ganti Password (Kosongkan jika tidak ingin ganti)</p>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Password Baru</label>
-              <input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                className="w-full mt-1 p-2 border rounded-md"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Konfirmasi Password Baru</label>
-              <input 
-                type="password" 
-                value={passwordConfirm} 
-                onChange={(e) => setPasswordConfirm(e.target.value)} 
-                className="w-full mt-1 p-2 border rounded-md"
-              />
-            </div>
-          </div>
-          
-          {/* Footer (Tombol Aksi) */}
-          <div className="flex justify-end p-4 border-t bg-gray-50">
-            <button type="button" onClick={onClose} className="bg-gray-300 text-gray-800 px-4 py-2 rounded-md mr-2 hover:bg-gray-400">
-              Batal
-            </button>
-            <button 
-              type="submit" 
-              disabled={loading} 
-              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:bg-indigo-300"
-            >
-              {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
+        </div>
+    );
+};
 
 export default ProfilModal;

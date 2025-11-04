@@ -20,7 +20,7 @@ const UpsellModal = () => {
                     </p>
 
                     <p className="text-gray-600 mb-6">
-                        Tingkatkan paket Anda untuk mendapatkan akses penuh ke fitur canggih ini, termasuk **Live Editing** untuk **{featureName}**.
+                        Tingkatkan paket Anda untuk mendapatkan akses penuh ke fitur **Live Editing** untuk **{featureName}**.
                     </p>
 
                     <div className="space-y-3">

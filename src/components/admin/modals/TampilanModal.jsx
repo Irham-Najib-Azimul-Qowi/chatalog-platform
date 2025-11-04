@@ -4,43 +4,41 @@ import { updateStoreSettings } from '../../../services/firebaseFunctions';
 
 const PaletWarna = [
     { name: 'Ungu (Default)', hex: '#4f46e5' },
+    { name: 'Oranye', hex: '#ff8c00' }, // Warna yang kita uji
     { name: 'Merah', hex: '#ef4444' },
-    { name: 'Kuning', hex: '#f59e0b' },
-    { name: 'Hijau', hex: '#10b981' },
-    { name: 'Cyan', hex: '#06b6d4' },
+    { name: 'Hijau Laut', hex: '#10b981' },
     { name: 'Biru', hex: '#3b82f6' },
+    { name: 'Pink', hex: '#ec4899' },
 ];
 
 const TampilanModal = () => {
-    const { settings, info, openAdminModal, closeAdminModal } = useToko();
+    // settings?.colors?.primary adalah jalur yang benar
+    const { settings, info, closeAdminModal, features } = useToko();
     
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     
-    // State lokal untuk form
-    const [warnaPrimer, setWarnaPrimer] = useState(settings?.warna_primer || PaletWarna[0].hex);
+    // State lokal untuk form: ambil nilai yang sedang aktif dari settings
+    const [warnaPrimer, setWarnaPrimer] = useState(settings?.colors?.primary || PaletWarna[0].hex);
 
-    // Dapatkan slug toko dari info (diasumsikan ada di info)
-    const storeSlug = info?.slug; 
+    const tokoId = info?.tokoId; 
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (loading || !storeSlug) return;
+        if (loading || !tokoId) return;
         
         setLoading(true);
         setMessage('');
 
         try {
-            // Update hanya field 'warna_primer' di object 'settings'
-            const update = { warna_primer: warnaPrimer };
-            await updateStoreSettings(storeSlug, update); 
+            // Kita hanya perlu mengirimkan objek { colors: { primary: value } }
+            const update = { colors: { primary: warnaPrimer } };
+            await updateStoreSettings(tokoId, update); 
             
             setMessage('Warna berhasil diperbarui! Perubahan sudah terlihat.');
             
-            // Tunggu sebentar lalu tutup modal
-            setTimeout(() => {
-                closeAdminModal();
-            }, 1000);
+            // Tutup modal agar Admin bisa kembali ke Editor
+            setTimeout(closeAdminModal, 1000); 
 
         } catch (error) {
             setMessage(`Gagal menyimpan: ${error.message}`);
@@ -53,7 +51,7 @@ const TampilanModal = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
                 <div className="p-6 border-b flex justify-between items-center">
-                    <h2 className="text-2xl font-bold text-[var(--color-primary)]">Atur Tampilan Toko</h2>
+                    <h2 className="text-2xl font-bold" style={{ color: settings?.colors?.primary }}>Atur Tampilan Toko</h2>
                     <button onClick={closeAdminModal} className="text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
                 </div>
 
@@ -79,8 +77,8 @@ const TampilanModal = () => {
                         </div>
                     </div>
                     
-                    {/* Color Picker Kustom (Hanya muncul jika fitur diaktifkan) */}
-                    {settings.features?.custom_color_enabled && (
+                    {/* Color Picker Kustom (Conditional Rendering) */}
+                    {features.allow_custom_theme && ( // Cek feature flag
                         <div>
                             <label htmlFor="custom_color" className="block text-lg font-semibold mb-2">Warna Kustom Pilihan</label>
                             <input 
@@ -93,6 +91,13 @@ const TampilanModal = () => {
                         </div>
                     )}
                     
+                    {/* Tampilan Upsell jika fitur kustom terkunci tapi tombol diklik (seharusnya tombol Desain dikunci di AdminBarToko) */}
+                    {!features.allow_custom_theme && (
+                        <p className="p-3 bg-yellow-100 text-yellow-800 rounded-lg">
+                            Fitur Color Picker Kustom terkunci. Pilih dari palet di atas.
+                        </p>
+                    )}
+
                     {/* Pesan Status */}
                     {message && (
                         <div className={`p-3 rounded-lg ${message.startsWith('Gagal') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
@@ -104,8 +109,8 @@ const TampilanModal = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 text-lg font-bold text-white rounded-lg transition-all duration-200 
-                                   bg-[var(--color-primary)] hover:opacity-90 disabled:opacity-50"
+                        className="w-full py-3 text-lg font-bold text-white rounded-lg transition-all duration-200 hover:opacity-90 disabled:opacity-50"
+                        style={{ backgroundColor: settings?.colors?.primary }}
                     >
                         {loading ? 'Menyimpan...' : 'Simpan Perubahan Tampilan'}
                     </button>

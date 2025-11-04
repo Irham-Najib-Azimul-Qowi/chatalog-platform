@@ -25,6 +25,9 @@ export const uploadImageToCloudinary = async (file) => {
         );
 
         if (!response.ok) {
+            // Log response error secara detail
+            const errorData = await response.json();
+            console.error("Cloudinary Detailed Error:", errorData);
             throw new Error(`Cloudinary upload failed: ${response.statusText}`);
         }
 
@@ -33,6 +36,6 @@ export const uploadImageToCloudinary = async (file) => {
 
     } catch (error) {
         console.error("Error uploading image to Cloudinary:", error);
-        throw new Error("Gagal mengupload gambar.");
+        throw new Error("Gagal mengupload gambar. Cek CLOUD_NAME dan UPLOAD_PRESET.");
     }
 };
