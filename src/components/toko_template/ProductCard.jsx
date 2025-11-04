@@ -11,6 +11,9 @@ const formatRupiah = (number) => {
 };
 
 const ProductCard = ({ produk }) => {
+    // 1. Tambahkan pengecekan cepat (Guard Clause)
+    if (!produk) return null;
+    
     // Ambil warna primer untuk styling tombol
     const { settings } = useToko();
     const primaryColor = settings?.colors?.primary;
@@ -21,6 +24,7 @@ const ProductCard = ({ produk }) => {
             {/* Gambar Produk */}
             <div className="h-48 overflow-hidden">
                 <img 
+                    // PERBAIKAN: Menggunakan produk.imageUrl (sesuai struktur Firestore Anda)
                     src={produk.imageUrl || 'https://via.placeholder.com/400x300?text=Produk+Belum+Ada'} 
                     alt={produk.name} 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
@@ -28,17 +32,17 @@ const ProductCard = ({ produk }) => {
             </div>
 
             <div className="p-4">
-                {/* Nama Produk (Menggunakan produk.name dari Firestore) */}
+                {/* Nama Produk */}
                 <h3 className="text-lg font-semibold text-gray-800 truncate mb-1" title={produk.name}>
                     {produk.name}
                 </h3>
                 
-                {/* Deskripsi Singkat (Menggunakan produk.description dari Firestore) */}
+                {/* Deskripsi Singkat */}
                 <p className="text-sm text-gray-500 h-10 overflow-hidden mb-3">
                     {produk.description || 'Deskripsi singkat produk ini.'}
                 </p>
 
-                {/* Harga dan Tombol Beli (Menggunakan produk.price dari Firestore) */}
+                {/* Harga dan Tombol Beli */}
                 <div className="flex justify-between items-center mt-3">
                     <span className="text-xl font-bold" style={{ color: primaryColor }}>
                         {formatRupiah(produk.price || 0)}
