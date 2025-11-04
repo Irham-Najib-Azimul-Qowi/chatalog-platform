@@ -1,6 +1,7 @@
 import React from 'react';
+import { useToko } from '../../hooks/useToko';
 
-// Fungsi bantuan untuk format harga (anggap ada di utils/index.js)
+// Fungsi bantuan (Anggap ini ada di utils/index.js atau file helper)
 const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
@@ -10,38 +11,46 @@ const formatRupiah = (number) => {
 };
 
 const ProductCard = ({ produk }) => {
+    // 1. Tambahkan pengecekan cepat (Guard Clause)
+    if (!produk) return null;
+    
+    // Ambil warna primer untuk styling tombol
+    const { settings } = useToko();
+    const primaryColor = settings?.colors?.primary;
+
     return (
         <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
             
             {/* Gambar Produk */}
             <div className="h-48 overflow-hidden">
                 <img 
-                    src={produk.gambar_url || 'https://via.placeholder.com/400x300?text=Produk+Belum+Ada'} 
-                    alt={produk.nama} 
+                    // PERBAIKAN: Menggunakan produk.imageUrl (sesuai struktur Firestore Anda)
+                    src={produk.imageUrl || 'https://via.placeholder.com/400x300?text=Produk+Belum+Ada'} 
+                    alt={produk.name} 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                 />
             </div>
 
             <div className="p-4">
                 {/* Nama Produk */}
-                <h3 className="text-lg font-semibold text-gray-800 truncate mb-1" title={produk.nama}>
-                    {produk.nama}
+                <h3 className="text-lg font-semibold text-gray-800 truncate mb-1" title={produk.name}>
+                    {produk.name}
                 </h3>
                 
                 {/* Deskripsi Singkat */}
                 <p className="text-sm text-gray-500 h-10 overflow-hidden mb-3">
-                    {produk.deskripsi_singkat || 'Deskripsi singkat produk ini.'}
+                    {produk.description || 'Deskripsi singkat produk ini.'}
                 </p>
 
                 {/* Harga dan Tombol Beli */}
                 <div className="flex justify-between items-center mt-3">
-                    <span className="text-xl font-bold text-[var(--color-primary)]">
-                        {formatRupiah(produk.harga || 0)}
+                    <span className="text-xl font-bold" style={{ color: primaryColor }}>
+                        {formatRupiah(produk.price || 0)}
                     </span>
                     <button
-                        className="py-2 px-3 text-sm font-semibold rounded-lg text-white 
-                                   bg-[var(--color-primary)] hover:opacity-90 transition"
-                        onClick={() => console.log(`Tambah ${produk.nama} ke keranjang`)}
+                        className="py-2 px-3 text-sm font-semibold rounded-lg text-white transition"
+                        style={{ backgroundColor: primaryColor }}
+                        onClick={() => console.log(`Tambah ${produk.name} ke keranjang`)}
                     >
                         + Keranjang
                     </button>

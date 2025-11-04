@@ -4,7 +4,8 @@ import { useToko } from '../../hooks/useToko';
 const FooterToko = () => {
     const { info, settings } = useToko();
     
-    const namaToko = info?.nama_toko || 'Chatalog Store';
+    const namaToko = info?.name || 'Chatalog Store';
+    const primaryColor = settings?.colors?.primary;
     const tahun = new Date().getFullYear();
 
     return (
@@ -14,7 +15,7 @@ const FooterToko = () => {
                     
                     {/* Info Toko */}
                     <div className="w-full md:w-1/3 mb-6 md:mb-0">
-                        <h3 className="text-xl font-bold text-[var(--color-primary)] mb-2">{namaToko}</h3>
+                        <h3 className="text-xl font-bold mb-2" style={{ color: primaryColor }}>{namaToko}</h3>
                         <p className="text-gray-600 text-sm">
                             {info?.deskripsi_singkat || 'Toko online terbaik yang dibuat dengan Chatalog.'}
                         </p>
@@ -24,9 +25,8 @@ const FooterToko = () => {
                     <div className="w-full md:w-1/3 mb-6 md:mb-0">
                         <h4 className="font-semibold text-gray-700 mb-2">Tautan Cepat</h4>
                         <ul className="space-y-1 text-sm">
-                            <li><a href="/" className="text-gray-600 hover:text-[var(--color-primary)]">Home</a></li>
-                            <li><a href="/produk" className="text-gray-600 hover:text-[var(--color-primary)]">Produk</a></li>
-                            <li><a href="/contact" className="text-gray-600 hover:text-[var(--color-primary)]">Kontak</a></li>
+                            <li><a href="/" className="text-gray-600 hover:text-opacity-80" style={{ '--color-primary': primaryColor }} onMouseOver={e => e.currentTarget.style.color = primaryColor} onMouseOut={e => e.currentTarget.style.color = '#4b5563'}>Home</a></li>
+                            <li><a href="/produk" className="text-gray-600 hover:text-opacity-80" style={{ '--color-primary': primaryColor }} onMouseOver={e => e.currentTarget.style.color = primaryColor} onMouseOut={e => e.currentTarget.style.color = '#4b5563'}>Produk</a></li>
                         </ul>
                     </div>
                 </div>

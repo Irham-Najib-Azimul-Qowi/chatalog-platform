@@ -1,5 +1,8 @@
 import React, { createContext, useState, useEffect, useMemo } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { 
+    doc, query, collection, where, getDocs, 
+    onSnapshot, getDoc 
+} from 'firebase/firestore';
 
 // Anggap db sudah diexport dari file partner Anda
 // eslint-disable-next-line import/no-unresolved
@@ -8,138 +11,176 @@ import { db } from '../services/firebase';
 // 1. Buat Context
 const TokoContext = createContext();
 
-// Default atau initial state untuk data toko
+// ... (initialTokoData sama seperti sebelumnya, untuk menjaga konsistensi)
 const initialTokoData = {
-  loading: true,
-  error: null,
-  info: {}, 
-  settings: {
-    warna_primer: '#4f46e5', // Warna default ungu-600
-    logo_url: '',
-    hero_image_url: 'https://via.placeholder.com/1200x600?text=Hero+Image+Default',
-    // ... setting tampilan lainnya
-  },
-  features: {
-    show_blog: false,
-    show_galeri: false,
-    show_lokasi_page: false,
-    show_mitra_section: false,
-    custom_color_enabled: false, // Penting untuk fitur berbayar
-  },
-  produk: [], 
-  testimoni: [], 
-  // Tambahkan state untuk mengelola UI di dalam editor (misal: modal admin mana yang terbuka)
-  ui: {
-      isModalOpen: false,
-      activeModal: null, // Contoh: 'Produk', 'Tampilan', 'Upsell'
-      upsellFeatureName: null, // Nama fitur yang terkunci
-  }
+    loading: true,
+    error: null,
+    info: {}, 
+    settings: {
+        warna_primer: '#4f46e5',
+        logo_url: '',
+        hero_image_url: 'https://via.placeholder.com/1200x600?text=Hero+Image+Default',
+    },
+    features: {
+        show_blog: false,
+        show_galeri: false,
+        show_lokasi_page: false,
+        show_mitra_section: false,
+        custom_color_enabled: false,
+    },
+    produk: [], 
+    ui: {
+        isModalOpen: false,
+        activeModal: null, 
+        upsellFeatureName: null, 
+    }
 };
 
 // 2. Buat Provider
 export const TokoProvider = ({ children, storeSlug }) => {
-  const [tokoData, setTokoData] = useState(initialTokoData);
+    const [tokoData, setTokoData] = useState(initialTokoData);
+    const [tokoId, setTokoId] = useState(null); // State baru untuk menyimpan Toko ID
 
-  // Fungsi-fungsi untuk mengelola UI (akan digunakan oleh AdminBarToko)
-  const openAdminModal = (modalName, upsellFeature = null) => {
-    setTokoData(prev => ({
-        ...prev,
-        ui: {
-            isModalOpen: true,
-            activeModal: modalName,
-            upsellFeatureName: upsellFeature,
-        }
-    }));
-  };
+    // Fungsi UI Admin (openAdminModal, closeAdminModal) sama seperti sebelumnya...
+    const openAdminModal = (modalName, upsellFeature = null) => {
+        setTokoData(prev => ({
+            ...prev,
+            ui: { isModalOpen: true, activeModal: modalName, upsellFeatureName: upsellFeature }
+        }));
+    };
 
-  const closeAdminModal = () => {
-    setTokoData(prev => ({
-        ...prev,
-        ui: initialTokoData.ui, // Reset UI state
-    }));
-  };
+    const closeAdminModal = () => {
+        setTokoData(prev => ({
+            ...prev,
+            ui: initialTokoData.ui,
+        }));
+    };
 
-  // --- Real-Time Data Fetching dari Firestore ---
-  useEffect(() => {
-    if (!storeSlug) {
-      setTokoData(prev => ({ ...prev, loading: false, error: 'Slug Toko tidak ditemukan.' }));
-      return;
-    }
+    // --- Efek 1: Cari Toko ID berdasarkan Slug ---
+    useEffect(() => {
+        if (!storeSlug) return;
 
-    const tokoRef = doc(db, 'toko_klien', storeSlug);
+        setTokoData(prev => ({ ...prev, loading: true, error: null }));
+        setTokoId(null); // Reset ID
 
-    const unsubscribe = onSnapshot(tokoRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        
-        const updatedData = {
-          info: data.info || initialTokoData.info,
-          settings: { ...initialTokoData.settings, ...(data.settings || {}) },
-          features: { ...initialTokoData.features, ...(data.features || {}) },
-          produk: data.produk || initialTokoData.produk,
-          testimoni: data.testimoni || initialTokoData.testimoni,
+        const findTokoId = async () => {
+            try {
+                // Query koleksi tokos: cari dokumen yang memiliki field 'slug' = storeSlug
+                const q = query(collection(db, 'tokos'), where('slug', '==', storeSlug));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    throw new Error(`Toko dengan slug '${storeSlug}' tidak ditemukan.`);
+                }
+
+                // Ambil ID dokumen pertama yang cocok (yaitu Toko ID)
+                const docSnap = querySnapshot.docs[0];
+                setTokoId(docSnap.id);
+                
+                // Simpan info dasar (slug, name, ownerUid) ke state
+                setTokoData(prev => ({ 
+                    ...prev, 
+                    info: { ...docSnap.data(), slug: storeSlug, tokoId: docSnap.id } 
+                }));
+
+            } catch (error) {
+                console.error('Error finding Toko ID:', error);
+                setTokoData(prev => ({
+                    ...initialTokoData,
+                    loading: false,
+                    error: error.message,
+                }));
+            }
         };
 
-        setTokoData(prev => ({
-          ...prev, // Pertahankan state UI sebelumnya
-          ...updatedData,
-          loading: false,
-          error: null,
+        findTokoId();
+    }, [storeSlug]); // Jalankan ulang jika storeSlug berubah
+
+
+    // --- Efek 2: Ambil semua data Sub-Koleksi menggunakan Toko ID ---
+    useEffect(() => {
+        if (!tokoId) return; // Hanya berjalan jika tokoId sudah ditemukan
+
+        const unsubscribers = [];
+
+        // 1. Ambil Settings (tokos/{tokoId}/settings/config)
+        const settingsRef = doc(db, 'tokos', tokoId, 'settings', 'config');
+        unsubscribers.push(onSnapshot(settingsRef, (docSnap) => {
+            const data = docSnap.exists() ? docSnap.data() : {};
+            setTokoData(prev => ({ 
+                ...prev, 
+                settings: { ...initialTokoData.settings, ...data } 
+            }));
         }));
 
-      } else {
-        setTokoData(prev => ({
-          ...initialTokoData,
-          loading: false,
-          error: `Toko dengan slug '${storeSlug}' tidak ditemukan.`,
+        // 2. Ambil Features (tokos/{tokoId}/features/flags)
+        const featuresRef = doc(db, 'tokos', tokoId, 'features', 'flags');
+        unsubscribers.push(onSnapshot(featuresRef, (docSnap) => {
+            const data = docSnap.exists() ? docSnap.data() : {};
+            setTokoData(prev => ({ 
+                ...prev, 
+                features: { ...initialTokoData.features, ...data } 
+            }));
         }));
-      }
-    }, (error) => {
-      console.error('Error fetching toko data:', error);
-      setTokoData(prev => ({
-        ...initialTokoData,
-        loading: false,
-        error: 'Gagal memuat data toko. Silakan coba lagi.',
-      }));
-    });
+        
+        // 3. Ambil Products (tokos/{tokoId}/products - Koleksi)
+        const productsQuery = query(collection(db, 'tokos', tokoId, 'products'));
+        unsubscribers.push(onSnapshot(productsQuery, (querySnapshot) => {
+            const productsList = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setTokoData(prev => ({ 
+                ...prev, 
+                produk: productsList 
+            }));
+        }));
+        
+        // Setelah semua langganan aktif, set loading menjadi false
+        setTokoData(prev => ({ ...prev, loading: false }));
 
-    return () => unsubscribe();
-  }, [storeSlug]); 
+        // Cleanup: Hentikan semua langganan (snapshot listeners)
+        return () => unsubscribers.forEach(unsub => unsub());
 
-  // Memoize value, termasuk fungsi-fungsi admin
-  const contextValue = useMemo(() => ({
-      ...tokoData,
-      openAdminModal,
-      closeAdminModal,
-  }), [tokoData]);
+    }, [tokoId]); // Jalankan ulang jika tokoId ditemukan
 
-  // Handle Loading dan Error di sini (Untuk tampilan publik atau editor)
-  if (tokoData.loading) {
-      return (
-          <div className="flex h-screen items-center justify-center bg-gray-50">
-              <div className="text-xl font-semibold text-indigo-600">
-                  Memuat Toko Chatalog...
-              </div>
-          </div>
-      );
-  }
 
-  if (tokoData.error) {
-    return (
-        <div className="flex h-screen items-center justify-center bg-red-50">
-            <div className="p-6 rounded-lg bg-white shadow-xl text-center">
-                <p className="text-2xl font-bold text-red-600 mb-2">Error 404 - Toko Tidak Ditemukan</p>
-                <p className="text-gray-700">{tokoData.error}</p>
+    // Gabungkan data dan fungsi untuk context value
+    const contextValue = useMemo(() => ({
+        ...tokoData,
+        openAdminModal,
+        closeAdminModal,
+    }), [tokoData]);
+
+
+    // Handle Loading dan Error
+    if (tokoData.loading || (!tokoId && storeSlug && !tokoData.error)) {
+        return (
+            <div className="flex h-screen items-center justify-center bg-gray-50">
+                <div className="text-xl font-semibold text-indigo-600">
+                    Mencari Toko ID dan Memuat Data...
+                </div>
             </div>
-        </div>
-    );
-  }
+        );
+    }
 
-  return (
-    <TokoContext.Provider value={contextValue}>
-      {children}
-    </TokoContext.Provider>
-  );
+    if (tokoData.error) {
+        return (
+            <div className="flex h-screen items-center justify-center bg-red-50">
+                <div className="p-6 rounded-lg bg-white shadow-xl text-center">
+                    <p className="text-2xl font-bold text-red-600 mb-2">Error 404 - Toko Tidak Ditemukan</p>
+                    <p className="text-gray-700">{tokoData.error}</p>
+                </div>
+            </div>
+        );
+    }
+
+
+    return (
+        <TokoContext.Provider value={contextValue}>
+            {children}
+        </TokoContext.Provider>
+    );
 };
 
 // 3. Export Context
