@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { doc, getDoc } from "firebase/firestore"; // Impor getDoc
-import { db } from '../../services/firebase'; // Impor db
 
 // Komponen Halaman Login Utama
 function LoginPage() {
@@ -11,7 +9,8 @@ function LoginPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { login, currentUser, userData, loading } = useAuth(); // Ambil dari hook
+  // Ambil loading, currentUser, dan userData dari hook
+  const { login, currentUser, userData, loading } = useAuth(); 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -26,31 +25,14 @@ function LoginPage() {
     }
 
     try {
-      // Panggil fungsi login dari AuthContext
-      const userCredential = await login(phone, password);
+      // --- PERBAIKAN ERROR #1 (LOGIC) ---
+      // Kita HANYA memanggil login.
+      await login(phone, password);
       
-      // Ambil role DAN slug secara manual di sini untuk redirect
-      const userDocRef = doc(db, "users", userCredential.user.uid);
-      const userDocSnap = await getDoc(userDocRef);
+      // 'onAuthStateChanged' di AuthContext akan menangani sisanya.
+      // Blok 'if (currentUser && userData)' di bawah 
+      // akan menangani redirect secara otomatis setelah data SIAP.
 
-      if (userDocSnap.exists()) {
-        const dbUserData = userDocSnap.data();
-        
-        // --- Logika Pengalihan (Redirect) ---
-        if (dbUserData.role === 'superadmin') {
-          navigate("/", { replace: true }); // Super Admin ke Homepage Chatalog
-        } else if (dbUserData.role === 'toko_admin') {
-          
-          // Ambil slug toko dari dokumen TOKO, bukan user
-          // Kita butuh dokumen 'tokos' dulu
-          // Untuk sekarang, kita arahkan ke halaman editor
-          navigate("/editor", { replace: true }); // Admin Toko ke halaman editor
-          
-        }
-      } else {
-        setError('Data user tidak ditemukan di database.');
-      }
-      
     } catch (err) {
       if (err.code === 'auth/invalid-credential') {
         setError('Nomor Telepon atau Password salah.');
@@ -62,23 +44,24 @@ function LoginPage() {
     setIsSubmitting(false);
   };
 
-  // --- Redirect jika sudah login ---
+  // --- Logika Pengalihan (Redirect) ---
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <h1>Memeriksa status login...</h1>
+      <div className="flex items-center justify-center h-screen">
+        <h1 className="text-xl font-semibold">Memeriksa status login...</h1>
       </div>
     ); 
   }
   
   if (currentUser && userData) {
+    // Jika pengguna sudah login, alihkan mereka
     if (userData.role === 'superadmin') {
       return <Navigate to="/" replace />; // Super Admin ke Homepage Chatalog
     } else if (userData.role === 'toko_admin') {
       return <Navigate to="/editor" replace />; // Admin Toko ke halaman editor
     }
   }
-  // --- Akhir Redirect ---
+  // --- Akhir Logika Pengalihan ---
 
   // Jika belum login, tampilkan form
   return (
@@ -89,6 +72,8 @@ function LoginPage() {
         </h2>
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
+            {/* --- PERBAIKAN ERROR #2 (TYPO) --- */}
+            {/* Kata 'Input' sudah dihapus dari <label> */}
             <label 
               htmlFor="phone" 
               className="block text-sm font-medium text-gray-700"

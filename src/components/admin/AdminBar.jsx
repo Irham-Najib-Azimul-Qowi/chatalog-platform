@@ -7,6 +7,9 @@ import AdminBarSuperAdmin from './AdminBarSuperAdmin';
 function AdminBar() {
   const { currentUser, userData } = useAuth(); // Ambil status login & data user
 
+
+  console.log("AdminBar: Merender. currentUser ada?", !!currentUser);
+  console.log("AdminBar: Merender. userData-nya adalah:", userData);
   // Tampilkan bar HANYA jika yang login adalah Super Admin
   if (currentUser && userData && userData.role === 'superadmin') {
     return <AdminBarSuperAdmin />;
