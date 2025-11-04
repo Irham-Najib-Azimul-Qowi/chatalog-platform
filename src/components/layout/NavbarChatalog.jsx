@@ -89,7 +89,7 @@ function NavbarChatalog() {
               </div>
             )}
             
-            <NavLink to="/toko-list" className={({ isActive }) => isActive ? activeClass : inactiveClass}>
+            <NavLink to="/toko" className={({ isActive }) => isActive ? activeClass : inactiveClass}>
               Toko {/* TODO: Ganti /toko-list ke halaman portofolio toko */}
             </NavLink>
             <NavLink to="/tentang" className={({ isActive }) => isActive ? activeClass : inactiveClass}>

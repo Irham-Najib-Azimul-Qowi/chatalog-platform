@@ -18,6 +18,7 @@ import RegisterPage from './pages/chatalog/RegisterPage';
 import OnboardingTutorial from './pages/chatalog/OnboardingTutorial'; 
 import OnboardingInfo from './pages/chatalog/OnboardingInfo';     
 import EditorPage from './pages/chatalog/EditorPage';           
+import TokoListPage from './pages/chatalog/TokoListPage';
 // --- Akhir ---
 
 // === Halaman Template "Toko Klien" ===
@@ -54,10 +55,11 @@ function AppLoading() {
       <Routes>
         {/* === Rute dari 'main' (ChatalogLayout) === */}
         <Route element={<ChatalogLayout />}>
-          <Route path="/" element={<HomePageChatalog />} />
-          <Route path="/tentang" element={<AboutPage />} />
-          <Route path="/kontak" element={<ContactPage />} />
-          <Route path="/simulator" element={<SimulatorPage />} />
+            <Route path="/" element={<HomePageChatalog />} />
+            <Route path="/toko" element={<TokoListPage />} />
+            <Route path="/tentang" element={<AboutPage />} />
+            <Route path="/kontak" element={<ContactPage />} />
+            <Route path="/simulator" element={<SimulatorPage />} />
         </Route>
 
         {/* Halaman non-layout */}
