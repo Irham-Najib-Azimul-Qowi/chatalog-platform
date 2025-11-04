@@ -1,198 +1,100 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from '../../../services/firebase';
+import { collection, getDocs, query } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom'; // Kita akan pakai ini untuk "Edit"
 
-/**
- * SuperAdmin_TokoModal Component
- * Modal untuk mengelola toko (Super Admin)
- */
-const SuperAdmin_TokoModal = ({ isOpen, onClose, onSave, toko = null }) => {
-  const [formData, setFormData] = useState({
-    namaToko: toko?.namaToko || '',
-    email: toko?.email || '',
-    telepon: toko?.telepon || '',
-    ownerName: toko?.ownerName || '',
-    status: toko?.status || 'active',
-    paket: toko?.paket || 'basic',
-    tanggalBergabung: toko?.tanggalBergabung || '',
-    catatan: toko?.catatan || '',
-  });
+// Modal untuk mengelola semua toko klien
+function SuperAdminTokoModal({ isOpen, onClose }) {
+  const [tokos, setTokos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: Implement save logic
-    if (onSave) {
-      onSave(formData);
+  // Fungsi untuk memuat data semua toko
+  const fetchTokos = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // 1. Ambil semua dokumen dari koleksi 'tokos'
+      const tokosRef = collection(db, "tokos");
+      const q = query(tokosRef); // Tanpa filter
+      
+      const querySnapshot = await getDocs(q);
+      const tokosList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setTokos(tokosList);
+      
+    } catch (err) {
+      console.error("Error fetching tokos:", err);
+      setError("Gagal memuat daftar toko.");
     }
-    onClose();
+    setLoading(false);
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  // Panggil fetchTokos() saat modal pertama kali dibuka
+  useEffect(() => {
+    if (isOpen) {
+      fetchTokos();
+    }
+  }, [isOpen]);
+
+  // Fungsi untuk "mengedit" toko klien
+  // Ini akan mengarahkan Super Admin ke Editor Canva milik klien
+  const handleEditToko = (tokoId) => {
+    // TODO: Kita perlu logic untuk "impersonate" (menyamar) sebagai admin toko.
+    // Untuk sekarang, kita arahkan ke halaman editor (yang diproteksi).
+    // Ini mungkin gagal jika role kita 'superadmin' dan 'ProtectedRoute'
+    // hanya mengizinkan 'toko_admin'.
+    
+    // Untuk masa depan, kita akan buat '/editor/:tokoId'
+    // dan ProtectedRoute akan cek: "Apakah role 'superadmin' ATAU 
+    // 'toko_admin' yang tokoId-nya cocok?"
+    
+    alert(`(Fitur Masa Depan) Mengarahkan ke editor untuk Toko ID: ${tokoId}. Kita perlu update ProtectedRoute dulu.`);
+    // navigate(`/editor/${tokoId}`); // Simpan ini untuk nanti
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">
-            {toko ? 'Edit Toko' : 'Tambah Toko'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
-          >
-            ×
-          </button>
+    // Latar belakang modal
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+      {/* Konten Modal */}
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="text-xl font-bold">Manajemen Toko Klien</h2>
+          <button onClick={onClose} className="text-2xl">&times;</button>
         </div>
-
-        <form onSubmit={handleSubmit}>
+        
+        {/* Body (Daftar Toko) */}
+        <div className="p-6 overflow-y-auto">
+          {loading && <p>Memuat daftar toko...</p>}
+          {error && <p className="text-red-500">{error}</p>}
+          
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nama Toko
-              </label>
-              <input
-                type="text"
-                name="namaToko"
-                value={formData.namaToko}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Nama toko"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="email@example.com"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Telepon
-                </label>
-                <input
-                  type="tel"
-                  name="telepon"
-                  value={formData.telepon}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="081234567890"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nama Pemilik
-              </label>
-              <input
-                type="text"
-                name="ownerName"
-                value={formData.ownerName}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Nama pemilik toko"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            {tokos.length === 0 && !loading && <p>Belum ada toko yang terdaftar.</p>}
+            
+            {tokos.map(toko => (
+              <div key={toko.id} className="border p-4 rounded-md flex justify-between items-center">
+                <div>
+                  <p className="font-bold">{toko.name || '(Tanpa Nama)'}</p>
+                  <p className="text-sm text-gray-600">ID: {toko.id}</p>
+                  <p className="text-sm text-gray-600">Pemilik UID: {toko.ownerUid || 'N/A'}</p>
+                </div>
+                <button 
+                  onClick={() => handleEditToko(toko.id)}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
                 >
-                  <option value="active">Aktif</option>
-                  <option value="inactive">Tidak Aktif</option>
-                  <option value="suspended">Ditangguhkan</option>
-                </select>
+                  Kelola Toko
+                </button>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Paket
-                </label>
-                <select
-                  name="paket"
-                  value={formData.paket}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="basic">Basic</option>
-                  <option value="premium">Premium</option>
-                  <option value="enterprise">Enterprise</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tanggal Bergabung
-              </label>
-              <input
-                type="date"
-                name="tanggalBergabung"
-                value={formData.tanggalBergabung}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Catatan
-              </label>
-              <textarea
-                name="catatan"
-                value={formData.catatan}
-                onChange={handleChange}
-                rows="4"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Catatan admin"
-              />
-            </div>
+            ))}
           </div>
-
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Simpan
-            </button>
-          </div>
-        </form>
+        </div>
+        
       </div>
     </div>
   );
-};
+}
 
-export default SuperAdmin_TokoModal;
+export default SuperAdminTokoModal;
