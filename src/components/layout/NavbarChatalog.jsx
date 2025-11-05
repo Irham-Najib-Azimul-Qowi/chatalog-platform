@@ -2,12 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
-// Impor Modal Super Admin (ContentModal DIHAPUS)
+// 1. Impor CANGKANG Modal (Popup baru kita)
+import Modal from '../common/Modal'; 
+
+// 2. Impor KONTEN Modal (File-file yang HANYA berisi form/tabel)
 import SuperAdminOrderModal from '../admin/modals/SuperAdmin_OrderModal';
 import SuperAdminTokoModal from '../admin/modals/SuperAdmin_TokoModal';
+// (Kita biarkan ContentEditorPage sebagai Halaman, bukan Modal)
 import ProfilModal from '../admin/modals/ProfilModal';
 
-// Helper Hook untuk menutup dropdown saat klik di luar
+// Helper Hook untuk menutup dropdown (Tidak berubah)
 function useClickOutside(ref, callback) {
   useEffect(() => {
     function handleClick(event) {
@@ -25,14 +29,10 @@ function NavbarChatalog() {
   const { currentUser, userData, logout } = useAuth();
   const isSuperAdmin = currentUser && userData?.role === 'superadmin';
 
-  // State untuk modal (HANYA 'order', 'toko', 'profil')
-  const [activeModal, setActiveModal] = useState(null); 
-  
-  // State untuk dropdown
+  const [activeModal, setActiveModal] = useState(null); // 'order', 'toko', 'profil'
   const [isSuperAdminMenuOpen, setIsSuperAdminMenuOpen] = useState(false);
   const [isProfilMenuOpen, setIsProfilMenuOpen] = useState(false);
   
-  // Ref untuk menutup dropdown
   const adminMenuRef = useRef(null);
   const profilMenuRef = useRef(null);
   useClickOutside(adminMenuRef, () => setIsSuperAdminMenuOpen(false));
@@ -41,7 +41,7 @@ function NavbarChatalog() {
   const handleLogout = async () => {
     try {
       await logout();
-      setIsProfilMenuOpen(false); // Tutup dropdown setelah logout
+      setIsProfilMenuOpen(false); 
     } catch (error) {
       console.error("Gagal logout:", error);
     }
@@ -50,9 +50,38 @@ function NavbarChatalog() {
   const activeClass = "text-white font-bold";
   const inactiveClass = "text-gray-300 hover:text-white";
 
+  // 3. Helper function untuk merender KONTEN dan JUDUL
+  const renderModalContent = () => {
+    switch(activeModal) {
+      case 'order':
+        return { 
+          title: 'Manajemen Order', 
+          content: <SuperAdminOrderModal isOpen={true} onClose={() => setActiveModal(null)} /> 
+        };
+      case 'toko':
+        return { 
+          title: 'Manajemen Toko Klien', 
+          content: <SuperAdminTokoModal isOpen={true} onClose={() => setActiveModal(null)} /> 
+        };
+      case 'profil':
+        return { 
+          title: 'Edit Profil', 
+          content: <ProfilModal isOpen={true} onClose={() => setActiveModal(null)} /> 
+        };
+      default:
+        return { title: '', content: null };
+    }
+  };
+
+  const { title, content } = renderModalContent();
+
   return (
     <>
-      <header className="bg-[#006064] text-white shadow-md sticky top-0 z-40" style={{ backgroundColor: '#006064' }}>
+      {/* ========================================
+        BAGIAN NAVBAR (TAMPILAN)
+        ========================================
+      */}
+      <header className="bg-chatalog-primary text-white shadow-md sticky top-0 z-40">
         <nav className="container mx-auto flex items-center p-4 px-6 h-16 relative">
           
           {/* 1. BAGIAN KIRI */}
@@ -68,18 +97,14 @@ function NavbarChatalog() {
                 </button>
                 {/* Dropdown Superadmin */}
                 {isSuperAdminMenuOpen && (
-                  <div className="absolute left-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg z-50">
-                    
-                    {/* === PERUBAHAN DI SINI === */}
+                   <div className="absolute left-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg z-50">
                     <Link 
-                      to="/superadmin/content" // Ini adalah Link, bukan button
+                      to="/superadmin/content" // Ini tetap Halaman Editor Canva
                       onClick={() => setIsSuperAdminMenuOpen(false)} 
                       className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                     >
                       Edit Konten Chatalog
                     </Link>
-                    {/* === AKHIR PERUBAHAN === */}
-
                     <button onClick={() => { setActiveModal('order'); setIsSuperAdminMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
                       Manajemen Order
                     </button>
@@ -119,8 +144,7 @@ function NavbarChatalog() {
                 </Link>
                 <Link 
                   to="/login" 
-                  className="bg-[#FFAB40] text-black font-bold py-2 px-4 rounded-md hover:bg-orange-400 transition-colors"
-                  style={{ backgroundColor: '#FFAB40' }}
+                  className="bg-chatalog-secondary text-black font-bold py-2 px-4 rounded-md hover:opacity-80 transition-colors"
                 >
                   Masuk
                 </Link>
@@ -151,25 +175,21 @@ function NavbarChatalog() {
         </nav>
       </header>
 
-      {/* BAGIAN MODAL (LOGIKA)
-        'SuperAdminContentModal' telah DIHAPUS dari sini
+      {/* ========================================
+        BAGIAN MODAL (LOGIKA PENGHUBUNG)
+        ========================================
       */}
-      {isSuperAdmin && (
-        <>
-          <SuperAdminOrderModal 
-            isOpen={activeModal === 'order'} 
-            onClose={() => setActiveModal(null)} 
-          />
-          <SuperAdminTokoModal 
-            isOpen={activeModal === 'toko'} 
-            onClose={() => setActiveModal(null)} 
-          />
-          <ProfilModal
-            isOpen={activeModal === 'profil'}
-            onClose={() => setActiveModal(null)}
-          />
-        </>
-      )}
+      {/* Ini adalah perbaikan Kritis. 
+        Kita panggil SATU Cangkang Modal, dan kita masukkan KONTEN (isi)
+        modal ke dalamnya sebagai children.
+      */}
+      <Modal
+        isOpen={activeModal !== null}
+        onClose={() => setActiveModal(null)}
+        title={title}
+      >
+        {content}
+      </Modal>
     </>
   );
 }
