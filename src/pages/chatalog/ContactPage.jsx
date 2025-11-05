@@ -1,12 +1,9 @@
 import React from 'react';
-// Impor ikon
 import { FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
 
-// Halaman Kontak (Desain Ulang)
+// Halaman Kontak (Redesign v3)
 function ContactPage() {
 
-  // Nanti, data ini akan diambil dari Firestore
-  // via SuperAdmin_ContentModal
   const contactData = {
     email: "admin@chatalog.com",
     phone: "+62 123 456 789",
@@ -14,69 +11,82 @@ function ContactPage() {
   };
 
   return (
-    <div className="bg-white min-h-[70vh] flex items-center">
-      <div className="container mx-auto px-6 py-16">
+    <div className="bg-white min-h-[70vh] flex items-center py-20">
+      <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           
           {/* Kolom Kiri: Info Kontak */}
-          {/* --- PERBAIKAN: Hapus class 'prose' & 'prose-lg' --- */}
-          <div className="max-w-none">
-            <h1 className="text-4xl font-extrabold text-gray-900 mb-6">
+          <div>
+            <h1 className="text-5xl font-extrabold text-text-dark mb-6">
               Hubungi Kami
             </h1>
-            <p className="text-gray-700 leading-relaxed text-lg mb-8">
+            <p className="text-lg text-text-body leading-relaxed mb-10">
               Punya pertanyaan tentang fitur, harga, atau butuh demo?
               Jangan ragu untuk mengirimkan pesan kepada kami.
             </p>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex items-center">
-                <FaPhone className="text-2xl text-[#006064] mr-4" />
-                <span className="text-gray-800">{contactData.phone}</span>
+                <FaPhone className="text-3xl text-chatalog-primary mr-5" />
+                <div>
+                  <h4 className="text-lg font-bold text-text-dark">Telepon</h4>
+                  <span className="text-lg text-text-body">{contactData.phone}</span>
+                </div>
               </div>
               <div className="flex items-center">
-                <FaEnvelope className="text-2xl text-[#006064] mr-4" />
-                <span className="text-gray-800">{contactData.email}</span>
+                <FaEnvelope className="text-3xl text-chatalog-primary mr-5" />
+                <div>
+                  <h4 className="text-lg font-bold text-text-dark">Email</h4>
+                  <span className="text-lg text-text-body">{contactData.email}</span>
+                </div>
               </div>
               <div className="flex items-start">
-                <FaMapMarkerAlt className="text-2xl text-[#006064] mr-4 mt-1" />
-                <span className="text-gray-800">{contactData.address}</span>
+                <FaMapMarkerAlt className="text-3xl text-chatalog-primary mr-5 mt-1" />
+                <div>
+                  <h4 className="text-lg font-bold text-text-dark">Alamat</h4>
+                  <span className="text-lg text-text-body">{contactData.address}</span>
+                </div>
               </div>
             </div>
           </div>
           
           {/* Kolom Kanan: Form */}
-          <div className="bg-gray-50 p-8 rounded-lg shadow-lg border border-gray-200">
-            <form className="space-y-4">
+          <div className="bg-background-light p-8 rounded-xl shadow-xl border border-gray-200">
+            <form className="space-y-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nama Anda</label>
+                <label htmlFor="name" className="block text-sm font-bold text-text-body mb-2">Nama Anda</label>
                 <input 
                   type="text" 
                   id="name"
-                  className="w-full mt-1 p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#006064] focus:border-[#006064]" 
+                  placeholder="Masukkan nama lengkap Anda"
+                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg shadow-sm 
+                             focus:ring-2 focus:ring-chatalog-primary focus:border-chatalog-primary" 
                 />
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Anda</label>
+                <label htmlFor="email" className="block text-sm font-bold text-text-body mb-2">Email Anda</label>
                 <input 
                   type="email" 
                   id="email"
-                  className="w-full mt-1 p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#006064] focus:border-[#006064]"
+                  placeholder="Masukkan email Anda"
+                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg shadow-sm 
+                             focus:ring-2 focus:ring-chatalog-primary focus:border-chatalog-primary"
                 />
               </div>
               <div>
-                {/* --- PERBAIKAN: Typo </Cetak> dihapus --- */}
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700">Pesan</label>
+                <label htmlFor="message" className="block text-sm font-bold text-text-body mb-2">Pesan</label>
                 <textarea 
                   id="message"
                   rows="5" 
-                  className="w-full mt-1 p-3 border border-gray-300 rounded-md shadow-sm focus:ring-[#006064] focus:border-[#006064]"
+                  placeholder="Tuliskan pesan Anda di sini..."
+                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg shadow-sm 
+                             focus:ring-2 focus:ring-chatalog-primary focus:border-chatalog-primary"
                 ></textarea>
               </div>
               <button 
                 type="submit" 
                 // Tombol dengan warna Primer Chatalog
-                className="w-full bg-[#006064] text-white font-bold py-3 px-6 rounded-md 
-                           hover:bg-[#004D40] transition-colors duration-300"
+                className="w-full bg-chatalog-primary text-white font-bold py-3 px-6 rounded-lg 
+                           hover:opacity-80 transition-all duration-300"
               >
                 Kirim Pesan
               </button>
