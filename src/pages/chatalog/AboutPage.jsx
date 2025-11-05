@@ -1,20 +1,25 @@
 import React from 'react';
-// Impor ikon
 import { FaUsers, FaBullseye, FaLightbulb } from 'react-icons/fa';
 
-// Halaman Tentang Kami (Desain Ulang)
-function AboutPage() {
-  
-  // Nanti, data ini akan diambil dari Firestore
-  // via SuperAdmin_ContentModal
-  const aboutData = {
+// Tambahkan props: { isPreview = false, previewData = {} }
+function AboutPage({ isPreview = false, previewData = {} }) {
+     
+  // Data default
+  const defaultData = {
     heroTitle: "Tentang Chatalog",
     heroSubtitle: "Memberdayakan UMKM Indonesia melalui teknologi yang mudah dan terjangkau.",
     storyTitle: "Kisah Kami",
-    storyText: "Chatalog dimulai dari sebuah visi sederhana: memberdayakan setiap UMKM di Indonesia dengan alat digital yang setara dengan bisnis besar. Kami melihat banyak pemilik usaha kecil yang kesulitan bersaing secara online karena keterbatasan teknis dan biaya. Oleh karena itu, kami membangun platform ini dengan satu misi: membuat teknologi e-commerce canggih menjadi sesuatu yang bisa digunakan oleh siapa saja, semudah mengedit kanvas.",
+    storyText: "Chatalog dimulai dari sebuah visi sederhana...",
     teamTitle: "Tim Kami",
-    teamText: "Kami adalah tim pengembang, desainer, dan pegiat UMKM yang bersemangat untuk menciptakan solusi nyata. (Konten ini bisa diedit oleh Super Admin)."
+    teamText: "Kami adalah tim pengembang..."
   };
+  
+  // Gunakan data preview jika ada, jika tidak, gunakan data default
+  const aboutData = isPreview ? {
+    ...defaultData, // Ambil default
+    storyText: previewData.storyText || defaultData.storyText, // Timpa dengan data live
+    teamText: previewData.aboutText || defaultData.teamText,  // Timpa dengan data live
+  } : defaultData;
 
   return (
     <div className="bg-white">
@@ -34,20 +39,18 @@ function AboutPage() {
       <section className="py-20">
         <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
-            {/* Placeholder Gambar Tim/Cerita */}
             <div className="bg-[#006064] rounded-lg shadow-xl aspect-video flex items-center justify-center">
               <span className="text-white text-2xl font-bold">(Gambar Tim/Cerita)</span>
             </div>
           </div>
-          {/* --- PERBAIKAN: Hapus class 'prose' & 'prose-lg' --- */}
           <div className="max-w-none">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">{aboutData.storyTitle}</h2>
             <p className="text-gray-700 leading-relaxed text-lg">
-              {aboutData.storyText}
+              {aboutData.storyText} {/* <-- Gunakan data */}
             </p>
             <h2 className="text-3xl font-bold text-gray-900 mt-8 mb-4">{aboutData.teamTitle}</h2>
             <p className="text-gray-700 leading-relaxed text-lg">
-              {aboutData.teamText}
+              {aboutData.teamText} {/* <-- Gunakan data */}
             </p>
           </div>
         </div>
@@ -58,7 +61,6 @@ function AboutPage() {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             
-            {/* Card Visi */}
             <div className="bg-white p-8 rounded-lg shadow-lg">
               <FaBullseye className="text-4xl text-[#FFAB40] mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Visi Kami</h3>
@@ -67,7 +69,6 @@ function AboutPage() {
               </p>
             </div>
             
-            {/* Card Misi */}
             <div className="bg-white p-8 rounded-lg shadow-lg">
               <FaLightbulb className="text-4xl text-[#FFAB40] mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Misi Kami</h3>
@@ -76,7 +77,6 @@ function AboutPage() {
               </p>
             </div>
 
-            {/* Card Nilai */}
             <div className="bg-white p-8 rounded-lg shadow-lg">
               <FaUsers className="text-4xl text-[#FFAB40] mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Nilai Kami</h3>

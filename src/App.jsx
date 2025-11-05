@@ -30,7 +30,7 @@ import TokoAboutPage from './pages/toko/TokoAboutPage';
 import TokoContactPage from './pages/toko/TokoContactPage';
 import TokoBlogPage from './pages/toko/TokoBlogPage';
 import TokoGaleriPage from './pages/toko/TokoGaleriPage';
-
+import ContentEditorPage from './pages/chatalog/ContentEditorPage';
 // === Halaman Lain ===
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -84,13 +84,23 @@ function AppLoading() {
           } 
         />
         <Route 
-          path="/editor" 
-          element={
-            <ProtectedRoute allowedRoles={['toko_admin']}>
-              <EditorPage />
-            </ProtectedRoute>
-          } 
-        /> 
+          path="/editor" 
+          element={
+            <ProtectedRoute allowedRoles={['toko_admin']}>
+              <EditorPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* 2. TAMBAHKAN RUTE EDITOR SUPER ADMIN BARU INI */}
+        <Route 
+          path="/superadmin/content" 
+          element={
+            <ProtectedRoute allowedRoles={['superadmin']}>
+              <ContentEditorPage />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* ========================================================== */}
         {/* === Rute Toko Klien (Menggunakan Nested Routes) === */}
