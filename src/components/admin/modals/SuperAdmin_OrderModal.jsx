@@ -31,7 +31,7 @@ function SuperAdminOrderModal({ isOpen, onClose }) {
       {loading && <p>Memuat pesanan...</p>}
       {error && <p className="text-red-500">{error}</p>}
       
-      {orders.length === 0 && !loading && <p>Tidak ada pesanan baru.</p>}
+      {/* {orders.length === 0 && !loading && <p>Tidak ada pesanan baru.</p>} */}
       
       {orders.map(order => (
         <div key={order.id} className="border p-4 rounded-md">
