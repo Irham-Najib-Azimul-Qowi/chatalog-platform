@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-// Ikon untuk bagian Fitur
 import { FaBolt, FaPalette, FaMobileAlt, FaUsers, FaChartLine, FaShieldAlt } from 'react-icons/fa';
 
-// --- Helper Hook untuk Animasi Counter (dari step kita sebelumnya [cite: 3715]) ---
+// --- Helper Hook untuk Animasi Counter (Tidak Berubah) ---
 function useCountUp(end, setCount, duration = 2000) {
   const ref = useRef(null);
   const observerRef = useRef(null);
@@ -12,7 +11,6 @@ function useCountUp(end, setCount, duration = 2000) {
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !hasAnimated) {
         setHasAnimated(true);
@@ -29,55 +27,49 @@ function useCountUp(end, setCount, duration = 2000) {
         observer.disconnect();
       }
     }, { threshold: 0.5 });
-
     observer.observe(node);
     observerRef.current = observer;
-
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
     };
   }, [end, duration, setCount, hasAnimated]);
-
   return ref;
 }
 // --- Akhir Helper Hook ---
 
 
-// Homepage Web Utama Chatalog (Versi Desain Ulang)
+// Homepage Web Utama Chatalog (Versi Desain Ulang v2)
 function HomePageChatalog({ isPreview = false, previewData = {} }) {
   
-  // (Target jumlah toko, nanti bisa diambil dari Firestore)
   const JUMLAH_TOKO_TARGET = 150; 
   const [jumlahToko, setJumlahToko] = useState(0); 
   const countUpRef = useCountUp(JUMLAH_TOKO_TARGET, setJumlahToko);
 
-  // Data default jika tidak dalam mode preview
   const data = isPreview ? previewData : {
     heroTitle: "Mulai Digitalisasi Bisnis Anda Hari Ini",
     heroSubtitle: "Platform Chatalog dirancang khusus untuk UMKM Indonesia. Dapatkan website profesional dengan editor visual yang mudah dipahami dan terintegrasi AI.",
     storyText: "Chatalog dimulai dari sebuah visi sederhana: memberdayakan setiap UMKM di Indonesia dengan alat digital yang setara dengan bisnis besar...",
   };
 
-  // Komponen internal untuk Kartu Fitur
   const FeatureCard = ({ icon, title, children }) => (
     <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-100">
       <div className="mb-4">
-        {/* Ikon menggunakan warna Primer Chatalog */}
-        {React.createElement(icon, { className: "text-4xl text-[#006064]" })}
+        {/* Ikon menggunakan warna Primer Chatalog (dinamis) */}
+        {React.createElement(icon, { className: "text-4xl text-chatalog-primary" })}
       </div>
       <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
       <p className="text-gray-600">{children}</p>
     </div>
   );
 
-  // Komponen internal untuk Kartu Testimoni
   const TestimonialCard = ({ quote, name, title }) => (
     <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-100 h-full flex flex-col">
       <p className="text-gray-700 italic flex-grow">"{quote}"</p>
       <div className="flex items-center mt-4">
-        <div className="w-12 h-12 rounded-full bg-[#006064] flex items-center justify-center text-white font-bold text-xl mr-4">
+        {/* Avatar menggunakan warna Primer Chatalog (dinamis) */}
+        <div className="w-12 h-12 rounded-full bg-chatalog-primary flex items-center justify-center text-white font-bold text-xl mr-4">
           {name.charAt(0)}
         </div>
         <div>
@@ -90,15 +82,14 @@ function HomePageChatalog({ isPreview = false, previewData = {} }) {
 
   return (
     <>
-      {/* Bagian 1: Hero Section (Layout dari image_276427.png) */}
+      {/* Bagian 1: Hero Section */}
       <section className="bg-white">
         <div className="container mx-auto px-6 py-20 md:py-32 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           {/* Kiri: Teks Konten */}
           <div className="text-left">
             <span 
-              // Badge/Tagline menggunakan warna Primer Chatalog
-              className="inline-block bg-cyan-100 text-[#006064] text-sm font-semibold px-4 py-1 rounded-full mb-4"
-              style={{ backgroundColor: '#E0F7FA' }} // Fallback jika Tailwind purge
+              // Badge/Tagline (dinamis)
+              className="inline-block bg-chatalog-primary/10 text-chatalog-primary text-sm font-semibold px-4 py-1 rounded-full mb-4"
             >
               Platform Digital untuk UMKM
             </span>
@@ -111,29 +102,28 @@ function HomePageChatalog({ isPreview = false, previewData = {} }) {
             <div className="flex flex-col sm:flex-row gap-4">
               <Link 
                 to="/register" 
-                // Tombol "Daftar" (CTA Utama) menggunakan warna Secondary
-                className="bg-[#FFAB40] text-black font-bold py-3 px-8 rounded-lg text-lg 
-                           hover:bg-orange-400 transition-all duration-300
+                // Tombol "Daftar" (CTA Utama) menggunakan warna Secondary (dinamis)
+                className="bg-chatalog-secondary text-black font-bold py-3 px-8 rounded-lg text-lg 
+                           hover:opacity-80 transition-all duration-300
                            transform hover:scale-105 shadow-lg hover:shadow-xl text-center"
               >
                 Daftar Sekarang
               </Link>
               <Link 
                 to="/simulator" 
-                // Tombol "Lihat Demo" (CTA Sekunder) menggunakan outline Primer
-                className="bg-transparent border-2 border-[#006064] text-[#006064] font-bold py-3 px-8 rounded-lg text-lg 
-                           hover:bg-cyan-50 transition-all duration-300 text-center"
+                // Tombol "Lihat Demo" (CTA Sekunder) menggunakan outline Primer (dinamis)
+                className="bg-transparent border-2 border-chatalog-primary text-chatalog-primary font-bold py-3 px-8 rounded-lg text-lg 
+                           hover:bg-chatalog-primary/10 transition-all duration-300 text-center"
               >
                 Lihat Demo
               </Link>
             </div>
           </div>
           
-          {/* Kanan: Gambar (Layout dari image_276427.png) */}
+          {/* Kanan: Gambar (URL Baru) */}
           <div className="flex justify-center">
-            {/* Ganti URL gambar ini dengan gambar Anda sendiri */}
             <img 
-              src="https://images.unsplash.com/photo-1556761175-59736f623265?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
+              src="https://images.unsplash.com/photo-1557862921-3e16092bb49c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" 
               alt="Mengembangkan Bisnis UMKM"
               className="rounded-lg shadow-2xl object-cover w-full h-full max-h-[500px]"
             />
@@ -141,49 +131,41 @@ function HomePageChatalog({ isPreview = false, previewData = {} }) {
         </div>
       </section>
 
-      {/* Bagian 2: Statistik (Counter) (Layout dari image_276441.png) */}
+      {/* Bagian 2: Statistik (Sudah dipangkas) */}
       <section ref={countUpRef} className="bg-gray-50 py-20">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <h3 className="text-5xl font-extrabold text-[#006064]">{jumlahToko}+</h3>
-              <p className="text-lg text-gray-600 mt-2">UMKM Aktif</p>
-            </div>
-            <div>
-              {/* Dummy data untuk statistik lain */}
-              <h3 className="text-5xl font-extrabold text-[#006064]">50K+</h3>
-              <p className="text-lg text-gray-600 mt-2">Produk Terjual</p>
-            </div>
-            <div>
-              <h3 className="text-5xl font-extrabold text-[#006064]">98%</h3>
-              <p className="text-lg text-gray-600 mt-2">Kepuasan Pengguna</p>
-            </div>
-            <div>
-              <h3 className="text-5xl font-extrabold text-[#006064]">24/7</h3>
-              <p className="text-lg text-gray-600 mt-2">Customer Support</p>
-            </div>
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Bergabung dengan Ratusan Lainnya
+          </h2>
+          <div 
+            // Menggunakan warna Primer Chatalog (dinamis)
+            className="text-7xl md:text-8xl font-extrabold text-chatalog-primary my-4"
+          >
+            {jumlahToko}+
           </div>
+          <p className="text-xl text-gray-600">
+            Toko UMKM telah mempercayai Chatalog.
+          </p>
         </div>
       </section>
 
-      {/* Bagian 3: Logo Cloud (Permintaan Anda ) */}
+      {/* Bagian 3: Logo Cloud (Teks) */}
       <section className="bg-white py-20">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-2xl font-semibold text-gray-800 mb-12">
             Telah Dipercaya oleh Berbagai Bisnis
           </h2>
-          <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-70">
-            {/* Ganti dengan URL logo klien Anda */}
-            <img src="https://via.placeholder.com/150x60?text=LOGO+A" alt="Logo Klien A" className="h-12" />
-            <img src="https://via.placeholder.com/150x60?text=LOGO+B" alt="Logo Klien B" className="h-12" />
-            <img src="https://via.placeholder.com/150x60?text=LOGO+C" alt="Logo Klien C" className="h-12" />
-            <img src="https://via.placeholder.com/150x60?text=LOGO+D" alt="Logo Klien D" className="h-12" />
-            <img src="https://via.placeholder.com/150x60?text=LOGO+E" alt="Logo Klien E" className="h-12" />
+          <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-60">
+            <span className="text-2xl font-semibold text-gray-500 italic">Logo Klien A</span>
+            <span className="text-2xl font-semibold text-gray-500 italic">Logo Klien B</span>
+            <span className="text-2xl font-semibold text-gray-500 italic">Logo Klien C</span>
+            <span className="text-2xl font-semibold text-gray-500 italic">Logo Klien D</span>
+            <span className="text-2xl font-semibold text-gray-500 italic">Logo Klien E</span>
           </div>
         </div>
       </section>
       
-      {/* Bagian 4: Fitur Unggulan (Layout dari image_276441.png) */}
+      {/* Bagian 4: Fitur Unggulan (Tidak Berubah) */}
       <section className="bg-gray-50 py-20">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -215,7 +197,7 @@ function HomePageChatalog({ isPreview = false, previewData = {} }) {
         </div>
       </section>
 
-      {/* Bagian 5: Testimoni (Layout dari image_276427.png) */}
+      {/* Bagian 5: Testimoni (Tidak Berubah) */}
       <section className="bg-white py-20">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -244,7 +226,7 @@ function HomePageChatalog({ isPreview = false, previewData = {} }) {
         </div>
       </section>
 
-      {/* Bagian 6: Final CTA (Layout dari image_276441.png) */}
+      {/* Bagian 6: Final CTA (Tidak Berubah) */}
       <section className="bg-gray-50 py-20">
         <div className="container mx-auto px-6 text-center max-w-3xl">
           <h2 className="text-4xl font-extrabold text-gray-900 mb-6">
@@ -256,9 +238,8 @@ function HomePageChatalog({ isPreview = false, previewData = {} }) {
           </p>
           <Link 
             to="/register" 
-            // Tombol CTA Utama menggunakan warna Secondary
-            className="bg-[#FFAB40] text-black font-bold py-4 px-10 rounded-lg text-lg 
-                       hover:bg-orange-400 transition-all duration-300
+            className="bg-chatalog-secondary text-black font-bold py-4 px-10 rounded-lg text-lg 
+                       hover:opacity-80 transition-all duration-300
                        transform hover:scale-105 shadow-lg hover:shadow-xl"
           >
             Daftar Sekarang
