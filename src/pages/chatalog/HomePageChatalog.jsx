@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
-// --- Helper Hook untuk Animasi Counter (DIPERBAIKI) ---
-// Hook ini sekarang menerima 'setCount' sebagai argumen
+// --- Helper Hook untuk Animasi Counter (Tetap sama) ---
 function useCountUp(end, setCount, duration = 2000) {
   const ref = useRef(null);
   const observerRef = useRef(null);
-  const [hasAnimated, setHasAnimated] = useState(false); // State animasi dipindah ke dalam hook
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
@@ -14,21 +13,19 @@ function useCountUp(end, setCount, duration = 2000) {
 
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !hasAnimated) {
-        setHasAnimated(true); // Tandai sudah animasi
+        setHasAnimated(true); 
         
-        // Mulai animasi
         let startTime = null;
         const step = (timestamp) => {
           if (!startTime) startTime = timestamp;
           const progress = Math.min((timestamp - startTime) / duration, 1);
-          // Panggil setCount yang DIKIRIM dari komponen
           setCount(Math.floor(progress * end)); 
           if (progress < 1) {
             requestAnimationFrame(step);
           }
         };
         requestAnimationFrame(step);
-        observer.disconnect(); // Hentikan observasi
+        observer.disconnect(); 
       }
     }, { threshold: 0.5 });
 
@@ -40,37 +37,38 @@ function useCountUp(end, setCount, duration = 2000) {
         observerRef.current.disconnect();
       }
     };
-  }, [end, duration, setCount, hasAnimated]); // Tambahkan dependensi
+  }, [end, duration, setCount, hasAnimated]);
 
-  return ref; // Kembalikan ref untuk ditempel ke elemen
+  return ref; 
 }
 // --- Akhir Helper Hook ---
 
 
-// Homepage Web Utama Chatalog (Versi Desain Ulang)
-function HomePageChatalog() {
+// Tambahkan props: { isPreview = false, previewData = {} }
+function HomePageChatalog({ isPreview = false, previewData = {} }) {
   
   const JUMLAH_TOKO = 150; 
-  
-  // --- PERBAIKAN BUG DIMULAI DI SINI ---
-  // 1. Definisikan state 'count' DI LUAR hook
   const [count, setCount] = useState(0); 
-  
-  // 2. Kirim 'setCount' ke dalam hook
   const countUpRef = useCountUp(JUMLAH_TOKO, setCount); 
-  // --- PERBAIKAN BUG SELESAI ---
+
+  // --- DATA PREVIEW ---
+  // Jika ini mode preview, gunakan data dari props.
+  // Jika tidak (mode publik), gunakan data default (atau fetch data nanti)
+  const data = isPreview ? previewData : {
+    heroTitle: "Mulai Digitalisasi Bisnis Anda Hari Ini",
+    storyText: "Chatalog dimulai dari sebuah visi sederhana...",
+  };
+  // --- AKHIR PREVIEW ---
 
   return (
     <>
-      {/* Navbar dan Footer sudah diurus oleh ChatalogLayout */}
-      
-      {/* Bagian 1: Hero Section (Desain Ulang) */}
+      {/* Bagian 1: Hero Section */}
       <section 
         className="bg-gradient-to-b from-white to-gray-50 text-center py-20 md:py-32"
       >
         <div className="container mx-auto px-6">
           <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
-            Mulai Digitalisasi Bisnis Anda Hari Ini
+            {data.heroTitle || "Mulai Digitalisasi Bisnis Anda Hari Ini"} {/* <-- Gunakan data */}
           </h1>
           <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
             Platform Chatalog dirancang khusus untuk UMKM Indonesia. Dapatkan website
@@ -88,7 +86,6 @@ function HomePageChatalog() {
       </section>
 
       {/* Bagian 2: Statistik (Counter) */}
-      {/* 3. Tempelkan ref ke elemen ini */}
       <section ref={countUpRef} className="bg-white py-20">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -97,7 +94,6 @@ function HomePageChatalog() {
           <div 
             className="text-7xl md:text-8xl font-extrabold text-[#006064] my-4"
           >
-            {/* 4. Variabel 'count' sekarang bisa diakses */}
             {count}+
           </div>
           <p className="text-xl text-gray-600">
@@ -113,7 +109,6 @@ function HomePageChatalog() {
             Telah Dipercaya oleh Berbagai Bisnis
           </h2>
           <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-70">
-            {/* Placeholder logo klien */}
             <p className="text-3xl font-bold text-gray-500">LOGO KLIEN A</p>
             <p className="text-3xl font-bold text-gray-500">LOGO KLIEN B</p>
             <p className="text-3xl font-bold text-gray-500">LOGO KLIEN C</p>
@@ -123,14 +118,12 @@ function HomePageChatalog() {
         </div>
       </section>
       
-      {/* Bagian 4: Kisah Chatalog (Tetap Sama) */}
+      {/* Bagian 4: Kisah Chatalog */}
       <section className="bg-white py-20">
         <div className="container mx-auto px-6 max-w-4xl text-center">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Kisah Kami</h2>
             <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-              Chatalog dimulai dari sebuah visi sederhana: memberdayakan setiap UMKM di Indonesia
-              dengan alat digital yang setara dengan bisnis besar. Kami percaya teknologi
-              harusnya mudah dan terjangkau.
+              {data.storyText || "Chatalog dimulai dari sebuah visi sederhana..."} {/* <-- Gunakan data */}
             </p>
             <Link 
               to="/tentang" 

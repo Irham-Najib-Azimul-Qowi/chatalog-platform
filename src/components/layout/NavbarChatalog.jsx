@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
-// Impor Modal Super Admin
+// Impor Modal Super Admin (ContentModal DIHAPUS)
 import SuperAdminOrderModal from '../admin/modals/SuperAdmin_OrderModal';
 import SuperAdminTokoModal from '../admin/modals/SuperAdmin_TokoModal';
-import SuperAdminContentModal from '../admin/modals/SuperAdmin_ContentModal';
 import ProfilModal from '../admin/modals/ProfilModal';
 
 // Helper Hook untuk menutup dropdown saat klik di luar
@@ -26,8 +25,8 @@ function NavbarChatalog() {
   const { currentUser, userData, logout } = useAuth();
   const isSuperAdmin = currentUser && userData?.role === 'superadmin';
 
-  // State untuk modal
-  const [activeModal, setActiveModal] = useState(null); // 'order', 'toko', 'content', 'profil'
+  // State untuk modal (HANYA 'order', 'toko', 'profil')
+  const [activeModal, setActiveModal] = useState(null); 
   
   // State untuk dropdown
   const [isSuperAdminMenuOpen, setIsSuperAdminMenuOpen] = useState(false);
@@ -53,17 +52,12 @@ function NavbarChatalog() {
 
   return (
     <>
-      {/* ========================================
-        BAGIAN NAVBAR (TAMPILAN)
-        ========================================
-      */}
-      <header className="bg-[#006064] text-white shadow-md sticky top-0 z-40">
+      <header className="bg-[#006064] text-white shadow-md sticky top-0 z-40" style={{ backgroundColor: '#006064' }}>
         <nav className="container mx-auto flex items-center p-4 px-6 h-16 relative">
           
           {/* 1. BAGIAN KIRI */}
           <div className="flex-1 flex justify-start items-center space-x-6">
             
-            {/* Muncul HANYA jika Super Admin login */}
             {isSuperAdmin && (
               <div className="relative" ref={adminMenuRef}>
                 <button
@@ -75,9 +69,17 @@ function NavbarChatalog() {
                 {/* Dropdown Superadmin */}
                 {isSuperAdminMenuOpen && (
                   <div className="absolute left-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg z-50">
-                    <button onClick={() => { setActiveModal('content'); setIsSuperAdminMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
-                      Edit Konten
-                    </button>
+                    
+                    {/* === PERUBAHAN DI SINI === */}
+                    <Link 
+                      to="/superadmin/content" // Ini adalah Link, bukan button
+                      onClick={() => setIsSuperAdminMenuOpen(false)} 
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                    >
+                      Edit Konten Chatalog
+                    </Link>
+                    {/* === AKHIR PERUBAHAN === */}
+
                     <button onClick={() => { setActiveModal('order'); setIsSuperAdminMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
                       Manajemen Order
                     </button>
@@ -89,8 +91,8 @@ function NavbarChatalog() {
               </div>
             )}
             
-            <NavLink to="/toko" className={({ isActive }) => isActive ? activeClass : inactiveClass}>
-              Toko {/* TODO: Ganti /toko-list ke halaman portofolio toko */}
+            <NavLink to="/toko" className={({ isActive }) => isActive ? activeClass : inactiveClass} end>
+              Toko
             </NavLink>
             <NavLink to="/tentang" className={({ isActive }) => isActive ? activeClass : inactiveClass}>
               Tentang
@@ -103,7 +105,7 @@ function NavbarChatalog() {
           {/* 2. BAGIAN TENGAH (LOGO) */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <Link to="/" className="text-3xl font-bold">
-              Chatalog {/* TODO: Ganti ini dengan <Logo /> */}
+              Chatalog
             </Link>
           </div>
 
@@ -118,6 +120,7 @@ function NavbarChatalog() {
                 <Link 
                   to="/login" 
                   className="bg-[#FFAB40] text-black font-bold py-2 px-4 rounded-md hover:bg-orange-400 transition-colors"
+                  style={{ backgroundColor: '#FFAB40' }}
                 >
                   Masuk
                 </Link>
@@ -148,10 +151,8 @@ function NavbarChatalog() {
         </nav>
       </header>
 
-      {/* ========================================
-        BAGIAN MODAL (LOGIKA)
-        Hanya akan render jika Super Admin login
-        ========================================
+      {/* BAGIAN MODAL (LOGIKA)
+        'SuperAdminContentModal' telah DIHAPUS dari sini
       */}
       {isSuperAdmin && (
         <>
@@ -162,10 +163,6 @@ function NavbarChatalog() {
           <SuperAdminTokoModal 
             isOpen={activeModal === 'toko'} 
             onClose={() => setActiveModal(null)} 
-          />
-          <SuperAdminContentModal
-            isOpen={activeModal === 'content'}
-            onClose={() => setActiveModal(null)}
           />
           <ProfilModal
             isOpen={activeModal === 'profil'}
