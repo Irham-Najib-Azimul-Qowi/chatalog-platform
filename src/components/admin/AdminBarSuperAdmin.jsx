@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-// 1. Impor SEMUA modal
+// 1. Impor hanya modal Super Admin
 import SuperAdminOrderModal from './modals/SuperAdmin_OrderModal';
 import SuperAdminTokoModal from './modals/SuperAdmin_TokoModal';
 import SuperAdminContentModal from './modals/SuperAdmin_ContentModal';
-import ProfilModal from './modals/ProfilModal';
+
+// HAPUS IMPOR MODAL TOKO: ProfilModal sudah dihapus
 
 // Ini adalah UI untuk Admin Bar Super Admin [cite: IV.B]
 function AdminBarSuperAdmin() {
   const { logout } = useAuth();
-  // 2. State sekarang bisa 'order', 'toko', 'content', atau 'profil'
+  // 2. State hanya untuk modal Super Admin
   const [activeModal, setActiveModal] = useState(null); 
 
   const handleLogout = async () => {
@@ -31,31 +32,29 @@ function AdminBarSuperAdmin() {
             CHATALOG SUPER ADMIN
           </div>
           <nav className="flex items-center space-x-2 md:space-x-4">
-            {/* 3. Hubungkan tombol baru */}
+            {/* Tombol Content */}
             <button 
               onClick={() => setActiveModal('content')}
               className="text-sm hover:bg-white/20 p-2 rounded-md"
             >
               Content
             </button>
+            {/* Tombol Order */}
             <button 
               onClick={() => setActiveModal('order')} 
               className="text-sm hover:bg-white/20 p-2 rounded-md"
             >
               Order
             </button>
+            {/* Tombol Toko */}
             <button 
               onClick={() => setActiveModal('toko')}
               className="text-sm hover:bg-white/20 p-2 rounded-md"
             >
               Toko
             </button>
-            <button 
-              onClick={() => setActiveModal('profil')}
-              className="text-sm hover:bg-white/20 p-2 rounded-md"
-            >
-              Profil
-            </button>
+            {/* Tombol Profil Toko milik Dev B Dihapus dari sini */}
+            
             <button
               onClick={handleLogout}
               className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-3 py-2 rounded-md"
@@ -67,7 +66,7 @@ function AdminBarSuperAdmin() {
         </div>
       </div>
       
-      {/* 4. Render SEMUA modal */}
+      {/* 4. Render modal Super Admin saja */}
       <SuperAdminOrderModal 
         isOpen={activeModal === 'order'} 
         onClose={() => setActiveModal(null)} 
@@ -80,12 +79,10 @@ function AdminBarSuperAdmin() {
         isOpen={activeModal === 'content'}
         onClose={() => setActiveModal(null)}
       />
-      <ProfilModal
-        isOpen={activeModal === 'profil'}
-        onClose={() => setActiveModal(null)}
-      />
+      {/* PENTING: ProfilModal Dihapus dari sini */}
     </>
   );
 }
 
 export default AdminBarSuperAdmin;
+
