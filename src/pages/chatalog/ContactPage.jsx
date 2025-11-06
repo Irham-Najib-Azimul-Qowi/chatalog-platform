@@ -1,21 +1,30 @@
 import React from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
 
-// Halaman Kontak (Redesign v3)
-function ContactPage() {
+// Tambahkan props: { isPreview = false, previewData = {} }
+function ContactPage({ isPreview = false, previewData = {} }) {
 
-  const contactData = {
-    email: "admin@chatalog.com",
-    phone: "+62 123 456 789",
-    address: "Madiun, Jawa Timur, Indonesia"
+  // Data default
+  const defaultData = {
+    phone: "0812-3456-7890",
+    email: "halo@chatalog.com",
+    address: "Jl. Contoh No. 123, Kota Surabaya, Jawa Timur"
   };
+
+  // --- DATA PREVIEW (DIPERBARUI) ---
+  const contactData = isPreview ? {
+    phone: previewData.contactPhone || defaultData.phone,
+    email: previewData.contactEmail || defaultData.email,
+    address: previewData.contactAddress || defaultData.address,
+  } : defaultData;
+  // --- AKHIR PREVIEW ---
 
   return (
     <div className="bg-white min-h-[70vh] flex items-center py-20">
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           
-          {/* Kolom Kiri: Info Kontak */}
+          {/* Kolom Kiri: Info Kontak (Live) */}
           <div>
             <h1 className="text-5xl font-extrabold text-text-dark mb-6">
               Hubungi Kami
@@ -55,36 +64,29 @@ function ContactPage() {
               <div>
                 <label htmlFor="name" className="block text-sm font-bold text-text-body mb-2">Nama Anda</label>
                 <input 
-                  type="text" 
-                  id="name"
-                  placeholder="Masukkan nama lengkap Anda"
+                  type="text" id="name" placeholder="Masukkan nama lengkap Anda"
                   className="w-full mt-1 p-3 border border-gray-300 rounded-lg shadow-sm 
-                             focus:ring-2 focus:ring-chatalog-primary focus:border-chatalog-primary" 
+                             focus:ring-2 focus:ring-chatalog-primary" 
                 />
               </div>
               <div>
                 <label htmlFor="email" className="block text-sm font-bold text-text-body mb-2">Email Anda</label>
                 <input 
-                  type="email" 
-                  id="email"
-                  placeholder="Masukkan email Anda"
+                  type="email" id="email" placeholder="Masukkan email Anda"
                   className="w-full mt-1 p-3 border border-gray-300 rounded-lg shadow-sm 
-                             focus:ring-2 focus:ring-chatalog-primary focus:border-chatalog-primary"
+                             focus:ring-2 focus:ring-chatalog-primary"
                 />
               </div>
               <div>
                 <label htmlFor="message" className="block text-sm font-bold text-text-body mb-2">Pesan</label>
                 <textarea 
-                  id="message"
-                  rows="5" 
-                  placeholder="Tuliskan pesan Anda di sini..."
+                  id="message" rows="5" placeholder="Tuliskan pesan Anda di sini..."
                   className="w-full mt-1 p-3 border border-gray-300 rounded-lg shadow-sm 
-                             focus:ring-2 focus:ring-chatalog-primary focus:border-chatalog-primary"
+                             focus:ring-2 focus:ring-chatalog-primary"
                 ></textarea>
               </div>
               <button 
                 type="submit" 
-                // Tombol dengan warna Primer Chatalog
                 className="w-full bg-chatalog-primary text-white font-bold py-3 px-6 rounded-lg 
                            hover:opacity-80 transition-all duration-300"
               >
