@@ -18,7 +18,7 @@ import RegisterPage from './pages/chatalog/RegisterPage';
 import OnboardingTutorial from './pages/chatalog/OnboardingTutorial'; 
 import OnboardingInfo from './pages/chatalog/OnboardingInfo';     
 import EditorPage from './pages/chatalog/EditorPage';           
-import TokoListPage from './pages/chatalog/TokoListPage';
+import TokoListPage from './pages/chatalog/ShopPage';
 // --- Akhir ---
 
 // === Halaman Template "Toko Klien" ===

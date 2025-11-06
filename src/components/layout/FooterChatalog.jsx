@@ -1,46 +1,76 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { FaFacebook, FaInstagram, FaTwitter } from 'react-icons/fa';
 
-function FooterChatalog() {
+// Tambahkan props: { isPreview = false, previewData = {} }
+function FooterChatalog({ isPreview = false, previewData = {} }) {
+
+  const currentYear = new Date().getFullYear();
+
+  // Data default untuk footer
+  const defaultData = {
+    copyrightText: `© ${currentYear} Chatalog. All rights reserved.`,
+  };
+
+  // --- DATA PREVIEW (DIPERBARUI) ---
+  const footerData = isPreview ? {
+    copyrightText: previewData.footerCopyright || defaultData.copyrightText,
+  } : defaultData;
+  // --- AKHIR PREVIEW ---
+
   return (
-    // Menggunakan warna Primer Chatalog
-    <footer className="bg-[#006064] text-gray-300 py-12">
-      <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-        
-        {/* Kolom 1: Tentang Chatalog */}
+    <footer className="bg-chatalog-primary text-white py-12">
+      <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+        {/* Kolom 1: Logo & Deskripsi Singkat */}
         <div>
-          <h3 className="text-2xl font-bold text-white mb-4">Chatalog</h3>
-          <p className="text-sm">
-            Platform "pabrik website" untuk UMKM go digital dengan mudah, cepat, dan terintegrasi AI.
+          <h3 className="text-3xl font-bold mb-4">Chatalog</h3>
+          <p className="text-gray-200 text-sm leading-relaxed">
+            Platform Chatalog dirancang untuk memberdayakan UMKM, membantu mereka tumbuh di era digital.
           </p>
         </div>
-        
-        {/* Kolom 2: Link Cepat */}
+
+        {/* Kolom 2: Navigasi Cepat */}
         <div>
-          <h4 className="text-lg font-semibold text-white mb-4">Navigasi</h4>
-          <ul className="space-y-2 text-sm">
-            <li><Link to="/tentang" className="hover:text-white">Tentang Kami</Link></li>
-            <li><Link to="/simulator" className="hover:text-white">Simulator</Link></li>
-            <li><Link to="/kontak" className="hover:text-white">Kontak</Link></li>
-            <li><Link to="/register" className="hover:text-white">Daftar Sekarang</Link></li>
-          </ul>
-        </div>
-        
-        {/* Kolom 3: Kontak */}
-        <div>
-          <h4 className="text-lg font-semibold text-white mb-4">Hubungi Kami</h4>
-          <ul className="space-y-2 text-sm">
-            <li>Email: admin@chatalog.com</li>
-            <li>Telepon: +62 123 456 789</li>
-            <li>Madiun, Indonesia</li>
+          <h4 className="font-bold text-lg mb-4">Navigasi</h4>
+          <ul className="space-y-2 text-gray-200">
+            <li><Link to="/home" className="hover:text-white transition-colors">Home</Link></li>
+            <li><Link to="/shop" className="hover:text-white transition-colors">Toko</Link></li>
+            <li><Link to="/about" className="hover:text-white transition-colors">Tentang Kami</Link></li>
+            <li><Link to="/contact" className="hover:text-white transition-colors">Kontak</Link></li>
+            <li><Link to="/login" className="hover:text-white transition-colors">Masuk</Link></li>
           </ul>
         </div>
 
+        {/* Kolom 3: Layanan Kami */}
+        <div>
+          <h4 className="font-bold text-lg mb-4">Layanan</h4>
+          <ul className="space-y-2 text-gray-200">
+            <li><Link to="/simulator" className="hover:text-white transition-colors">Simulator</Link></li>
+            <li><Link to="/register" className="hover:text-white transition-colors">Daftar</Link></li>
+            <li><Link to="/bantuan" className="hover:text-white transition-colors">Pusat Bantuan</Link></li>
+          </ul>
+        </div>
+
+        {/* Kolom 4: Ikuti Kami */}
+        <div>
+          <h4 className="font-bold text-lg mb-4">Ikuti Kami</h4>
+          <div className="flex space-x-4">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-200 hover:text-white text-2xl transition-colors">
+              <FaFacebook />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-200 hover:text-white text-2xl transition-colors">
+              <FaInstagram />
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-200 hover:text-white text-2xl transition-colors">
+              <FaTwitter />
+            </a>
+          </div>
+        </div>
       </div>
-      <div className="container mx-auto px-6 text-center mt-8 border-t border-gray-700 pt-6">
-        <p className="text-sm">
-          &copy; {new Date().getFullYear()} Chatalog.
-        </p>
+
+      {/* Baris Hak Cipta */}
+      <div className="mt-12 border-t border-white/20 pt-8 text-center text-gray-300 text-sm">
+        <p>{footerData.copyrightText}</p>
       </div>
     </footer>
   );
